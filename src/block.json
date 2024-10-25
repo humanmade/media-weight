@@ -1,19 +1,9 @@
 {
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
-	"name": "create-block/altis-media-weight",
-	"version": "0.1.0",
-	"title": "Altis Media Weight",
-	"category": "widgets",
-	"icon": "smiley",
-	"description": "Example block scaffolded with Create Block tool.",
-	"example": {},
-	"supports": {
-		"html": false
-	},
+	"title": "Altis Media Weight block editor plugin",
+	"description": "Entrypoint for editor bundle which registers a plugin to monitor media usage.",
 	"textdomain": "altis-media-weight",
 	"editorScript": "file:./index.js",
-	"editorStyle": "file:./index.css",
-	"style": "file:./style-index.css",
-	"viewScript": "file:./view.js"
+	"editorStyle": "file:./index.css"
 }

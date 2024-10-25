@@ -1,39 +1,29 @@
-/**
- * Registers a new block provided a unique name and an object defining its behavior.
- *
- * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/
- */
-import { registerBlockType } from '@wordpress/blocks';
+import { __ } from '@wordpress/i18n';
+import { media } from '@wordpress/icons';
+import { PluginSidebar, PluginSidebarMoreMenuItem } from '@wordpress/editor';
+import { registerPlugin, unregisterPlugin } from '@wordpress/plugins';
 
-/**
- * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
- * All files containing `style` keyword are bundled together. The code used
- * gets applied both to the front of your site and to the editor.
- *
- * @see https://www.npmjs.com/package/@wordpress/scripts#using-css
- */
-import './style.scss';
+const PLUGIN_NAME = 'altis-media-weight';
+const SIDEBAR_NAME = PLUGIN_NAME;
 
-/**
- * Internal dependencies
- */
-import Edit from './edit';
-import save from './save';
-import metadata from './block.json';
+const Component = () => (
+	<>
+		<PluginSidebarMoreMenuItem target={ SIDEBAR_NAME }>
+			My Sidebar
+		</PluginSidebarMoreMenuItem>
+		<PluginSidebar name={ SIDEBAR_NAME } title={ __( 'Media Weight', 'altis-media-weight' ) }>
+			Content of the sidebar
+		</PluginSidebar>
+	</>
+);
 
-/**
- * Every block starts by registering a new block type definition.
- *
- * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/
- */
-registerBlockType( metadata.name, {
-	/**
-	 * @see ./edit.js
-	 */
-	edit: Edit,
-
-	/**
-	 * @see ./save.js
-	 */
-	save,
+registerPlugin( PLUGIN_NAME, {
+	icon: media,
+	render: Component,
 } );
+
+// Block HMR boilerplate.
+if ( module.hot ) {
+	module.hot.accept();
+	module.hot.dispose( () => unregisterPlugin( PLUGIN_NAME ) );
+}

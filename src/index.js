@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { __ } from '@wordpress/i18n';
-import { image, media } from '@wordpress/icons';
+import { media } from '@wordpress/icons';
 import { PluginSidebar, PluginSidebarMoreMenuItem } from '@wordpress/editor';
-import { PanelBody } from '@wordpress/components';
+import { PanelRow, PanelBody, Button } from '@wordpress/components';
 import { registerPlugin, unregisterPlugin } from '@wordpress/plugins';
 import { useSelect } from '@wordpress/data';
 import { store as blockEditorStore } from '@wordpress/block-editor';
@@ -54,8 +54,7 @@ const useMediaBlocks = () => {
 };
 
 const AltisMediaWeightSidebar = ( ...args ) => {
-	const mediaBlocks = useMediaBlocks();
-	console.log( mediaBlocks );
+	const attachments = useMediaBlocks();
 
 	return (
 		<>
@@ -64,11 +63,27 @@ const AltisMediaWeightSidebar = ( ...args ) => {
 			</PluginSidebarMoreMenuItem>
 			<PluginSidebar name={ SIDEBAR_NAME } title={ __( 'Media Weight', 'altis-media-weight' ) }>
 				<PanelBody>
-					{ mediaBlocks.map( ( block ) => (
-						<pre key={ `media-block-${ block.clientId }` }>
-							{ JSON.stringify( block, null, 2 ) }
-						</pre>
-					) ) }
+					{ attachments.map( ( attachment ) => {
+						const type = attachment.media_type === 'image' ? 'image' : 'video';
+						return (
+							<PanelRow key={ `media-details-${ attachment.id }` }>
+								<div>
+									<p>
+										<strong>
+											Image { attachment.id }: { ( attachment.media_details.filesize /  1000000 ).toFixed( 2 ) }mb
+										</strong>
+									</p>
+									<small style={ { display: 'block', whiteSpace: 'nowrap' } }>{ attachment.link }</small>
+									<details style={ { margin: '0.5rem 0 1rem' } }>
+										<summary>{ `json for ${ type } ID ${ attachment.id }` }</summary>
+										<pre>
+											{ JSON.stringify( attachment, null, 2 ) }
+										</pre>
+									</details>
+								</div>
+							</PanelRow>
+						);
+					} ) }
 				</PanelBody>
 			</PluginSidebar>
 		</>

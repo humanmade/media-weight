@@ -33,9 +33,5 @@ if ( module.exports.mode === 'production' ) {
 			...( defaultConfig.devServer || {} ),
 			allowedHosts: 'all',
 		},
-		optimization: {
-			...( defaultConfig.optimization || {} ),
-			runtimeChunk: 'single',
-		},
 	};
 }

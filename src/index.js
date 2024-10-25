@@ -42,10 +42,15 @@ const useMediaBlocks = () => {
 		}
 		return { imageIds, videoIds };
 	}, [ blocks ] );
-	return useEntityRecords( 'postType', 'attachment', {
+	const imageRecords = useEntityRecords( 'postType', 'attachment', {
 		per_page: imageIds.length,
 		include: imageIds,
 	} )?.records || [];
+	const videoRecords = useEntityRecords( 'postType', 'attachment', {
+		per_page: videoIds.length,
+		include: videoIds,
+	} )?.records || [];
+	return imageRecords.concat( videoRecords );
 };
 
 const AltisMediaWeightSidebar = ( ...args ) => {

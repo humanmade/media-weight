@@ -70,28 +70,31 @@ const AltisMediaWeightSidebar = ( ...args ) => {
 			<PluginSidebar name={ SIDEBAR_NAME } title={ __( 'Media Weight', 'altis-media-weight' ) }>
 				<PanelBody>
 					{ attachments.map( ( attachment ) => {
-						const type = attachment.media_type === 'image' ? 'image' : 'video';
+						const type = attachment.media_type === 'image' ? 'Image' : 'Video';
 						return (
 							<PanelRow key={ `media-details-${ attachment.id }` }>
 								<div>
 									<p>
 										<strong>
-											Image { attachment.id }: { ( attachment.media_details.filesize /  1000000 ).toFixed( 2 ) }mb
+											{ type } { attachment.id }: { ( attachment.media_details.filesize /  1000000 ).toFixed( 2 ) }mb
 										</strong>
 									</p>
 									<small style={ { display: 'block', whiteSpace: 'nowrap' } }>{ attachment.link }</small>
 									<details style={ { margin: '0.5rem 0 1rem' } }>
-										<summary>{ `json for ${ type } ID ${ attachment.id }` }</summary>
-										<pre>
-											{ JSON.stringify( attachment, null, 2 ) }
-										</pre>
+										<summary>{ 'View entity record JSON' }</summary>
+										<small>
+											<pre>
+												{ JSON.stringify( attachment, null, 2 ) }
+											</pre>
+										</small>
 									</details>
 									<Button
 										className="components-button is-compact is-secondary"
 										onClick={ () => selectBlock( blocksByAttributeId[ attachment.id ] ) }
 									>
-										Select block
+										Select associated block
 									</Button>
+									<hr />
 								</div>
 							</PanelRow>
 						);

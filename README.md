@@ -2,6 +2,12 @@
 
 This is a WIP plugin to examine the blocks added to a post and provide informative, in-editor warnings if the page weight grows to a prohibitive size.
 
+## What it does
+
+Currently, all this plugin does is to register a block editor plugin sidebar which you can click on to see the JSON entity records for all images and videos added to the post via blocks. It is currently aware only of the core image and video blocks.
+
+Ideally, it will eventually make accurate estimations of aggregate page size based on the associated media, and display a pre-publish or editor-banner warning when that size goes above a specific threshold.
+
 ## Development
 
 Download this plugin, activate it within WordPress, and run the Node build. In Altis, this can be done via the following commands (run them from a terminal in the project `content/plugins/` directory):

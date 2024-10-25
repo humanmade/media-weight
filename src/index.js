@@ -4,7 +4,7 @@ import { media } from '@wordpress/icons';
 import { PluginSidebar, PluginSidebarMoreMenuItem } from '@wordpress/editor';
 import { PanelRow, PanelBody, Button } from '@wordpress/components';
 import { registerPlugin, unregisterPlugin } from '@wordpress/plugins';
-import { useSelect } from '@wordpress/data';
+import { useDispatch, useSelect } from '@wordpress/data';
 import { store as blockEditorStore } from '@wordpress/block-editor';
 import { useEntityRecords } from '@wordpress/core-data';
 
@@ -26,21 +26,23 @@ const getMediaBlocks = ( blocks ) => blocks.reduce(
 
 const useMediaBlocks = () => {
 	const blocks = useSelect( ( select ) => select( blockEditorStore ).getBlocks() );
-	const { imageIds, videoIds } = useMemo( () => {
+	const { imageIds, videoIds, blocksByAttributeId } = useMemo( () => {
 		const mediaBlocks = getMediaBlocks( blocks );
 		const imageIds = [];
 		const videoIds = [];
+		const blocksByAttributeId = {};
 		for ( let block of mediaBlocks ) {
 			if ( ! block.attributes?.id ) {
 				continue;
 			}
+			blocksByAttributeId[ block.attributes.id ] = block.clientId;
 			if ( block.name === 'core/image' ) {
 				imageIds.push( block.attributes.id );
 			} else if ( block.name === 'core/video' ) {
 				videoIds.push( block.attributes.id );
 			}
 		}
-		return { imageIds, videoIds };
+		return { imageIds, videoIds, blocksByAttributeId };
 	}, [ blocks ] );
 	const imageRecords = useEntityRecords( 'postType', 'attachment', {
 		per_page: imageIds.length,
@@ -50,11 +52,15 @@ const useMediaBlocks = () => {
 		per_page: videoIds.length,
 		include: videoIds,
 	} )?.records || [];
-	return imageRecords.concat( videoRecords );
+	return {
+		attachments: imageRecords.concat( videoRecords ),
+		blocksByAttributeId,
+	};
 };
 
 const AltisMediaWeightSidebar = ( ...args ) => {
-	const attachments = useMediaBlocks();
+	const { attachments, blocksByAttributeId } = useMediaBlocks();
+	const { selectBlock } = useDispatch( blockEditorStore );
 
 	return (
 		<>
@@ -80,6 +86,12 @@ const AltisMediaWeightSidebar = ( ...args ) => {
 											{ JSON.stringify( attachment, null, 2 ) }
 										</pre>
 									</details>
+									<Button
+										className="components-button is-compact is-secondary"
+										onClick={ () => selectBlock( blocksByAttributeId[ attachment.id ] ) }
+									>
+										Select block
+									</Button>
 								</div>
 							</PanelRow>
 						);

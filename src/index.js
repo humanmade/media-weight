@@ -132,6 +132,12 @@ const AltisMediaWeightSidebar = ( ...args ) => {
 					<h3>Total Media Size</h3>
 					<p>Images total: { imagesSize.toFixed( 2 ) }mb</p>
 					<p>Videos total: { videosSize.toFixed( 2 ) }mb</p>
+					<p>
+						<strong>
+							Total media size: { ' ' }
+							{ ( imagesSize + videosSize ).toFixed( 2 ) }mb
+						</strong>
+					</p>
 				</PanelBody>
 			</PluginSidebar>
 		</>

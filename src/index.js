@@ -55,31 +55,59 @@ const useMediaBlocks = () => {
 	return {
 		attachments: imageRecords.concat( videoRecords ),
 		blocksByAttributeId,
+		imageCount: imageIds.length,
+		videoCount: videoIds.length,
 	};
 };
 
 const AltisMediaWeightSidebar = ( ...args ) => {
-	const { attachments, blocksByAttributeId } = useMediaBlocks();
+	const {
+		attachments,
+		blocksByAttributeId,
+		imageCount,
+		videoCount
+	} = useMediaBlocks();
 	const { selectBlock } = useDispatch( blockEditorStore );
+	let imagesSize = 0;
+	let videosSize = 0;
 
 	return (
 		<>
 			<PluginSidebarMoreMenuItem target={ SIDEBAR_NAME }>
 				{ __( 'Media Weight sidebar', 'altis-media-weight' ) }
 			</PluginSidebarMoreMenuItem>
-			<PluginSidebar name={ SIDEBAR_NAME } title={ __( 'Media Weight', 'altis-media-weight' ) }>
+			<PluginSidebar className={ SIDEBAR_NAME } name={ SIDEBAR_NAME } title={ __( 'Media Weight', 'altis-media-weight' ) }>
 				<PanelBody>
+					<h3>Total Media Items</h3>
+					<p>Images: { imageCount }</p>
+					<p>Videos: { videoCount }</p>
+				</PanelBody>
+
+				<PanelBody>
+					<h3>Individual Media Items</h3>
 					{ attachments.map( ( attachment ) => {
 						const type = attachment.media_type === 'image' ? 'Image' : 'Video';
+						const mediaSize = attachment.media_details.filesize /  1000000;
+						console.log( attachment );
+
+						if ( attachment.media_type === 'image' ) {
+							imagesSize = imagesSize + mediaSize;
+						} else {
+							videosSize = videosSize + mediaSize;
+						}
+
 						return (
 							<PanelRow key={ `media-details-${ attachment.id }` }>
 								<div>
 									<p>
 										<strong>
-											{ type } { attachment.id }: { ( attachment.media_details.filesize /  1000000 ).toFixed( 2 ) }mb
+											{ type }: { mediaSize.toFixed( 2 ) }mb
 										</strong>
 									</p>
-									<small style={ { display: 'block', whiteSpace: 'nowrap' } }>{ attachment.link }</small>
+									<p>
+										Attachment ID: { attachment.id }<br />
+										<small><a href={ attachment.link }>Go to the attachment post &rsaquo;</a></small>
+									</p>
 									<details style={ { margin: '0.5rem 0 1rem' } }>
 										<summary>{ 'View entity record JSON' }</summary>
 										<small>
@@ -99,6 +127,12 @@ const AltisMediaWeightSidebar = ( ...args ) => {
 							</PanelRow>
 						);
 					} ) }
+				</PanelBody>
+
+				<PanelBody>
+					<h3>Total Media Size</h3>
+					<p>Images total: { imagesSize.toFixed( 2 ) }mb</p>
+					<p>Videos total: { videosSize.toFixed( 2 ) }mb</p>
 				</PanelBody>
 			</PluginSidebar>
 		</>

@@ -88,7 +88,6 @@ const AltisMediaWeightSidebar = ( ...args ) => {
 					{ attachments.map( ( attachment ) => {
 						const type = attachment.media_type === 'image' ? 'Image' : 'Video';
 						const mediaSize = attachment.media_details.filesize /  1000000;
-						console.log( attachment );
 
 						if ( attachment.media_type === 'image' ) {
 							imagesSize = imagesSize + mediaSize;

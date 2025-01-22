@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { media } from '@wordpress/icons';
 import { PluginSidebar, PluginSidebarMoreMenuItem } from '@wordpress/editor';
 import { PanelRow, PanelBody, Button } from '@wordpress/components';
@@ -92,9 +92,13 @@ const AltisMediaWeightSidebar = ( ...args ) => {
 		}
 
 		const warningMsg = total >= mediaThreshold ? (
-			<p className='description'>
-				{ __( 'Warning! The media in this page exceeds the recommended threshold of', 'altis-media-weight' ) + ' ' + mediaThreshold }mb
-			</p> ) : '';
+			<p className="description">
+				{ sprintf(
+					__( 'Warning! The media in this page exceeds the recommended threshold of %fmb', 'altis-media-weight' ),
+					mediaThreshold
+				) }
+			</p>
+		) : null;
 
 		return (
 			<>

@@ -42,6 +42,14 @@ function register_block_plugin_editor_scripts() {
 		$asset_file['dependencies'],
 		$asset_file['version']
 	);
+
+	wp_localize_script(
+		'altis-media-weight',
+		'mediaWeightData',
+		[
+			'mediaThreshold' => apply_filters( 'altis_media_weight_threshold', 2.50 ),
+		]
+	);
 }
 
 /**

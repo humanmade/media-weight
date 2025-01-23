@@ -12,7 +12,6 @@ concurrency:
 jobs:
   release-develop:
     name: "Update release-develop branch"
-    runs-on: ubuntu-latest
     uses: humanmade/hm-github-actions/.github/workflows/build-and-release-node-basic.yml@e9d83e785d128a9b49b0e85f02643dae73574900
     with:
       source_branch: add-gh-actions

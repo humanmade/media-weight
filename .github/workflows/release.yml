@@ -12,7 +12,7 @@ concurrency:
 jobs:
   release:
     name: "Update release branch"
-    uses: humanmade/hm-github-actions/workflows/build-and-release-node-basic.yml@bfccb5cda7aaebe400eb02d31c3b5179312e8985
+    uses: humanmade/hm-github-actions/.github/workflows/build-and-release-node-basic.yml@9fd6f33677b9aebfde18949095087a0b3c628371
     with:
       node_version: 22
       source_branch: add-gh-actions

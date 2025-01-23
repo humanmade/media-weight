@@ -27,7 +27,10 @@ jobs:
         with:
           source_branch: add-gh-actions
           release_branch: release
-          built_asset_paths: assets/dist
+          built_asset_paths: build
           build_script: |
+            ls -lah
+            ls node_modules || true
+            tree src || true
             npm ci
             npm run build

@@ -3,7 +3,7 @@ name: Develop Release
 on:
   push:
     branches:
-      - add-gh-actions
+      - develop
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref_name }}
@@ -12,11 +12,9 @@ concurrency:
 jobs:
   release-develop:
     name: "Update release-develop branch"
-    uses: humanmade/hm-github-actions/.github/workflows/build-and-release-node-basic.yml@e9d83e785d128a9b49b0e85f02643dae73574900
+    uses: humanmade/hm-github-actions/workflows/build-and-release-node-basic.yml@bfccb5cda7aaebe400eb02d31c3b5179312e8985
     with:
-      source_branch: add-gh-actions
+      node_version: 22
+      source_branch: develop
       release_branch: release-develop
       built_asset_paths: build
-      build_script: |
-        npm ci
-        npm run build

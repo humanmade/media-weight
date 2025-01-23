@@ -3,7 +3,7 @@ name: Production Release
 on:
   push:
     branches:
-      - add-gh-actions
+      - main
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref_name }}
@@ -15,6 +15,6 @@ jobs:
     uses: humanmade/hm-github-actions/.github/workflows/build-and-release-node.yml@2da9227322333e5f3ba18fec7aceabd9f5de365b
     with:
       node_version: 22
-      source_branch: add-gh-actions
+      source_branch: main
       release_branch: release
       built_asset_paths: build

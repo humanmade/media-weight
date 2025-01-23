@@ -3,7 +3,7 @@ name: Production Release
 on:
   push:
     branches:
-      - main
+      - add-gh-actions
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref_name }}
@@ -19,13 +19,13 @@ jobs:
 
       - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
-          node-version: '20'
+          node-version: 22
           cache: 'npm'
 
       - name: Merge and build
-        uses: ./.github/actions/build-to-release-branch
+        uses: humanmade/hm-github-actions/actions/build-to-release-branch@25234fa9f55b6793954cd22b85e578d7b18be866
         with:
-          source_branch: main
+          source_branch: add-gh-actions
           release_branch: release
           built_asset_paths: assets/dist
           build_script: |

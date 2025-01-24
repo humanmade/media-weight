@@ -4,6 +4,7 @@
 		"browser": true
 	},
 	"rules": {
+		"import/no-extraneous-dependencies": [ "off" ],
 		"jsdoc/no-undefined-types": [ "off" ],
 		"jsdoc/check-line-alignment": [ "warn" ],
 		"jsdoc/check-tag-names": [ "warn" ],

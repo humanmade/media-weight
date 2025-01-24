@@ -27,10 +27,9 @@ const getMediaBlocks = ( blocks ) => blocks.reduce(
 );
 
 const useMediaBlocks = () => {
-	const blocks = useSelect( ( select ) => select( blockEditorStore ).getBlocks() );
+	const mediaBlocks = useSelect( ( select ) => getMediaBlocks( select( blockEditorStore ).getBlocks() ) );
 	const featuredImageId = useSelect( ( select ) => select( 'core/editor' ).getEditedPostAttribute( 'featured_media' ) );
 	const { imageIds, videoIds, blocksByAttributeId } = useMemo( () => {
-		const mediaBlocks = getMediaBlocks( blocks );
 		const imageIds = [];
 		const videoIds = [];
 		const blocksByAttributeId = {};
@@ -49,7 +48,7 @@ const useMediaBlocks = () => {
 			imageIds.push( featuredImageId );
 		}
 		return { imageIds, videoIds, blocksByAttributeId };
-	}, [ blocks, featuredImageId ] );
+	}, [ mediaBlocks, featuredImageId ] );
 	const imageRecords = useEntityRecords( 'postType', 'attachment', {
 		per_page: imageIds.length,
 		include: imageIds,
@@ -62,6 +61,7 @@ const useMediaBlocks = () => {
 		attachments: imageRecords.concat( videoRecords ),
 		featuredImageId,
 		blocksByAttributeId,
+		mediaBlocks,
 		imageCount: imageIds.length,
 		videoCount: videoIds.length,
 	};

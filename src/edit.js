@@ -33,8 +33,8 @@ export default function Edit() {
 	return (
 		<p { ...useBlockProps() }>
 			{ __(
-				'Altis Media Weight – hello from the editor!',
-				'altis-media-weight'
+				'HM Media Weight – hello from the editor!',
+				'hm-media-weight'
 			) }
 		</p>
 	);

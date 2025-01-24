@@ -31,12 +31,11 @@ const getMediaBlocks = ( blocks ) => blocks.reduce(
 const useMediaBlocks = () => {
 	const mediaBlocks = useSelect( ( select ) => getMediaBlocks( select( blockEditorStore ).getBlocks() ) );
 	const featuredImageId = useSelect( ( select ) => select( 'core/editor' ).getEditedPostAttribute( 'featured_media' ) );
+	/* eslint-disable no-shadow */
 	const { imageIds, videoIds, blocksByAttributeId } = useMemo( () => {
-		// eslint-disable no-shadow
 		const imageIds = [];
 		const videoIds = [];
 		const blocksByAttributeId = {};
-		// eslint-enable
 		for ( const block of mediaBlocks ) {
 			if ( ! block.attributes?.id ) {
 				continue;
@@ -53,6 +52,7 @@ const useMediaBlocks = () => {
 		}
 		return { imageIds, videoIds, blocksByAttributeId };
 	}, [ mediaBlocks, featuredImageId ] );
+	/* eslint-enable no-shadow */
 	const imageRecords = useEntityRecords( 'postType', 'attachment', {
 		per_page: imageIds.length,
 		include: imageIds,

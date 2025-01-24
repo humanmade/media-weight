@@ -1,16 +1,16 @@
 <?php
 /**
- * Plugin Name:       Altis Media Weight
+ * Plugin Name:       HM Media Weight
  * Description:       Block Editor plugin to monitor media bandwidth usage.
  * Requires PHP:      8.1
  * Version:           0.1.0
  * Author:            Human Made Ltd
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       altis-media-weight
+ * Text Domain:       hm-media-weight
  */
 
-namespace Altis_Media_Weight;
+namespace HM_Media_Weight;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -37,14 +37,14 @@ function register_block_plugin_editor_scripts() {
 	}
 
 	wp_enqueue_script(
-		'altis-media-weight',
+		'hm-media-weight',
 		plugins_url( 'build/index.js', __FILE__ ),
 		$asset_file['dependencies'],
 		$asset_file['version']
 	);
 
 	wp_localize_script(
-		'altis-media-weight',
+		'hm-media-weight',
 		'mediaWeightData',
 		[
 			'mediaThreshold' => apply_filters( 'altis_media_weight_threshold', 2.50 ),
@@ -78,7 +78,7 @@ function maybe_warn_on_script_debug_mode() {
 	wp.domReady( () => {
 		wp.data.dispatch( 'core/notices' ).createNotice(
 			'warning',
-			"<?php echo esc_attr__( 'Altis Media Weight plugin is running in hot-reload mode, but SCRIPT_DEBUG is not set.', 'altis-media-weight' ); ?>",
+			"<?php echo esc_attr__( 'HM Media Weight plugin is running in hot-reload mode, but SCRIPT_DEBUG is not set.', 'hm-media-weight' ); ?>",
 			{
 				isDismissible: false,
 			}

@@ -10,7 +10,7 @@ import { useEntityRecords } from '@wordpress/core-data';
 
 const { mediaThreshold } = window.mediaWeightData;
 
-const PLUGIN_NAME = 'altis-media-weight';
+const PLUGIN_NAME = 'hm-media-weight';
 const SIDEBAR_NAME = PLUGIN_NAME;
 
 const getMediaBlocks = ( blocks ) => blocks.reduce(
@@ -67,7 +67,7 @@ const useMediaBlocks = () => {
 	};
 };
 
-const AltisMediaWeightSidebar = ( ...args ) => {
+const HMMediaWeightSidebar = ( ...args ) => {
 	const {
 		attachments,
 		featuredImageId,
@@ -94,7 +94,7 @@ const AltisMediaWeightSidebar = ( ...args ) => {
 		const warningMsg = total >= mediaThreshold ? (
 			<p className="description">
 				{ sprintf(
-					__( 'Warning! The media in this page exceeds the recommended threshold of %fmb', 'altis-media-weight' ),
+					__( 'Warning! The media in this page exceeds the recommended threshold of %fmb', 'hm-media-weight' ),
 					mediaThreshold
 				) }
 			</p>
@@ -102,11 +102,11 @@ const AltisMediaWeightSidebar = ( ...args ) => {
 
 		return (
 			<>
-				<p>{ __( 'Images total', 'altis-media-weight' ) }: { imagesSize.toFixed( 2 ) }mb</p>
-				<p>{ __( 'Videos total', 'altis-media-weight' ) }: { videosSize.toFixed( 2 ) }mb</p>
+				<p>{ __( 'Images total', 'hm-media-weight' ) }: { imagesSize.toFixed( 2 ) }mb</p>
+				<p>{ __( 'Videos total', 'hm-media-weight' ) }: { videosSize.toFixed( 2 ) }mb</p>
 				<p>
 					<strong>
-						{ __( 'Total media size', 'altis-media-weight' ) }: { ' ' }
+						{ __( 'Total media size', 'hm-media-weight' ) }: { ' ' }
 						<span style={
 							{
 								backgroundColor: sizeColor,
@@ -127,12 +127,12 @@ const AltisMediaWeightSidebar = ( ...args ) => {
 	return (
 		<>
 			<PluginSidebarMoreMenuItem target={ SIDEBAR_NAME }>
-				{ __( 'Media Weight sidebar', 'altis-media-weight' ) }
+				{ __( 'Media Weight sidebar', 'hm-media-weight' ) }
 			</PluginSidebarMoreMenuItem>
-			<PluginSidebar className={ SIDEBAR_NAME } name={ SIDEBAR_NAME } title={ __( 'Media Weight', 'altis-media-weight' ) }>
+			<PluginSidebar className={ SIDEBAR_NAME } name={ SIDEBAR_NAME } title={ __( 'Media Weight', 'hm-media-weight' ) }>
 				<PanelBody
 					initialOpen={ false }
-					title={ __( 'Total Media Items', 'altis-media-weight' ) }
+					title={ __( 'Total Media Items', 'hm-media-weight' ) }
 				>
 					<p>Images: { imageCount }</p>
 					<p>Videos: { videoCount }</p>
@@ -140,7 +140,7 @@ const AltisMediaWeightSidebar = ( ...args ) => {
 
 				<PanelBody
 					initialOpen={ false }
-					title={ __( 'Individual Media Items', 'altis-media-weight' ) }
+					title={ __( 'Individual Media Items', 'hm-media-weight' ) }
 				>
 					{ attachments.map( ( attachment ) => {
 						const blockButton = attachment.id !== featuredImageId ? (
@@ -148,12 +148,12 @@ const AltisMediaWeightSidebar = ( ...args ) => {
 								className="components-button is-compact is-secondary"
 								onClick={ () => selectBlock( blocksByAttributeId[ attachment.id ] ) }
 							>
-								{ __( 'Select associated block', 'altis-media-weight' ) }
+								{ __( 'Select associated block', 'hm-media-weight' ) }
 							</Button> ) : '';
 
-						let type = attachment.media_type === 'image' ? __( 'Image', 'altis-media-weight' ) : __( 'Video', 'altis-media-weight' );
+						let type = attachment.media_type === 'image' ? __( 'Image', 'hm-media-weight' ) : __( 'Video', 'hm-media-weight' );
 						if ( attachment.id === featuredImageId ) {
-							type = __( 'Featured image', 'altis-media-weight' );
+							type = __( 'Featured image', 'hm-media-weight' );
 						}
 						const mediaSize = attachment.media_details.filesize /  1000000;
 
@@ -176,7 +176,7 @@ const AltisMediaWeightSidebar = ( ...args ) => {
 										<small><a href={ attachment.link }>Go to the attachment post &rsaquo;</a></small>
 									</p>
 									<details style={ { margin: '0.5rem 0 1rem' } }>
-										<summary>{ __( 'View entity record JSON', 'altis-media-weight' ) }</summary>
+										<summary>{ __( 'View entity record JSON', 'hm-media-weight' ) }</summary>
 										<small>
 											<pre>
 												{ JSON.stringify( attachment, null, 2 ) }
@@ -194,7 +194,7 @@ const AltisMediaWeightSidebar = ( ...args ) => {
 
 				<PanelBody
 					initialOpen
-					title={ __( 'Total Media Size', 'altis-media-weight' ) }
+					title={ __( 'Total Media Size', 'hm-media-weight' ) }
 				>
 					<DisplayTotal
 						imagesSize={ imagesSize }
@@ -208,7 +208,7 @@ const AltisMediaWeightSidebar = ( ...args ) => {
 
 registerPlugin( PLUGIN_NAME, {
 	icon: media,
-	render: AltisMediaWeightSidebar,
+	render: HMMediaWeightSidebar,
 } );
 
 // Block HMR boilerplate.

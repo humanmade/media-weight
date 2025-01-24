@@ -125,21 +125,31 @@ const HMMediaWeightSidebar = ( ...args ) => {
 	let videosSize = 0;
 
 	const [ resolvedRemoteImageSizes, setResolvedImageSizes ] = useState( {} );
+	let targetImageURIs = attachments
+		.map( ( attachment ) => {
+			if ( attachment.media_type !== 'image' ) {
+				return null;
+			}
+			if ( attachment.id === featuredImageId ) {
+				// TODO: Understand via filters the expected size of a featured image,
+				// and report the URI of the expected target file for measurement.
+				return null;
+			}
+			const associatedBlockClientId = blocksByAttributeId[ attachment.id ];
+			const associatedBlock = mediaBlocks.find( ( block ) => block.clientId === associatedBlockClientId );
+			const imageUri = attachment?.media_details?.sizes?.[ associatedBlock?.attributes?.sizeSlug ]?.source_url || null;
+			if ( ! imageUri ) {
+				return null;
+			}
+			return [ attachment.id, imageUri ];
+		} )
+		.filter( Boolean );
+
+	// Create a stable reference for triggering useEffect.
+	targetImageURIs = JSON.stringify( targetImageURIs );
+
 	useEffect( () => {
-		const imageSizeRequests = attachments
-			.map( ( attachment ) => {
-				if ( attachment.media_type !== 'image' ) {
-					return null;
-				}
-				const associatedBlockClientId = blocksByAttributeId[ attachment.id ];
-				const associatedBlock = mediaBlocks.find( ( block ) => block.clientId === associatedBlockClientId );
-				const imageUri = attachment?.media_details?.sizes?.[ associatedBlock?.attributes?.sizeSlug ]?.source_url || null;
-				if ( ! imageUri ) {
-					return null;
-				}
-				return [ attachment.id, imageUri ];
-			} )
-			.filter( Boolean )
+		const imageSizeRequests = JSON.parse( targetImageURIs )
 			.map( ( [ id, uri ] ) => {
 				return checkImageSize( uri ).then( ( size ) => [ id, size ] );
 			} );
@@ -150,7 +160,7 @@ const HMMediaWeightSidebar = ( ...args ) => {
 			}, {} );
 			setResolvedImageSizes( resolvedSizes );
 		} );
-	}, [ attachments, mediaBlocks ] );
+	}, [ targetImageURIs ] );
 
 	const DisplayTotal = ( { imagesSize, videosSize } ) => {
 		const total = ( ( imagesSize + videosSize ) / MB_IN_B ).toFixed( 2 );
@@ -232,7 +242,7 @@ const HMMediaWeightSidebar = ( ...args ) => {
 
 						if ( attachment.media_type === 'image' ) {
 							const remoteImageSize = resolvedRemoteImageSizes[ attachment.id ];
-							console.log( { id: attachment.id, remoteImageSize } );
+							mediaSize = remoteImageSize || mediaSize;
 							imagesSize = imagesSize + ( remoteImageSize || mediaSize );
 						} else {
 							videosSize = videosSize + mediaSize;

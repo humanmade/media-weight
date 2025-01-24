@@ -1,0 +1,20 @@
+name: Develop Release
+
+on:
+  push:
+    branches:
+      - develop
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  release-develop:
+    name: "Update release-develop branch"
+    uses: humanmade/hm-github-actions/.github/workflows/build-and-release-node.yml@227ebe6ec618d246d3ed6787c3dc2f2e49f2692f
+    with:
+      node_version: 22
+      source_branch: develop
+      release_branch: release-develop
+      built_asset_paths: build

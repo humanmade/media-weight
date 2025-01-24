@@ -143,10 +143,11 @@ const HMMediaWeightSidebar = ( ...args ) => {
 					title={ __( 'Individual Media Items', 'hm-media-weight' ) }
 				>
 					{ attachments.map( ( attachment ) => {
+						const associatedBlockClientId = blocksByAttributeId[ attachment.id ];
 						const blockButton = attachment.id !== featuredImageId ? (
 							<Button
 								className="components-button is-compact is-secondary"
-								onClick={ () => selectBlock( blocksByAttributeId[ attachment.id ] ) }
+								onClick={ () => selectBlock( associatedBlockClientId ) }
 							>
 								{ __( 'Select associated block', 'hm-media-weight' ) }
 							</Button> ) : '';

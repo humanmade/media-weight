@@ -214,7 +214,7 @@ const HMMediaWeightSidebar = ( ...args ) => {
 			</PluginSidebarMoreMenuItem>
 			<PluginSidebar className={ SIDEBAR_NAME } name={ SIDEBAR_NAME } title={ __( 'Media Weight', 'hm-media-weight' ) }>
 				<PanelBody
-					initialOpen={ false }
+					initialOpen={ true }
 					title={ __( 'Total Media Items', 'hm-media-weight' ) }
 				>
 					<p>Images: { imageCount }</p>

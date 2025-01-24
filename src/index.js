@@ -32,10 +32,12 @@ const useMediaBlocks = () => {
 	const mediaBlocks = useSelect( ( select ) => getMediaBlocks( select( blockEditorStore ).getBlocks() ) );
 	const featuredImageId = useSelect( ( select ) => select( 'core/editor' ).getEditedPostAttribute( 'featured_media' ) );
 	const { imageIds, videoIds, blocksByAttributeId } = useMemo( () => {
+		// eslint-disable no-shadow
 		const imageIds = [];
 		const videoIds = [];
 		const blocksByAttributeId = {};
-		for ( let block of mediaBlocks ) {
+		// eslint-enable
+		for ( const block of mediaBlocks ) {
 			if ( ! block.attributes?.id ) {
 				continue;
 			}
@@ -77,7 +79,7 @@ const useMediaBlocks = () => {
  *
  * @async
  * @param {string} imageUri URL for a remote image.
- * @returns {Promise<number>} The size of the remote image, in bytes.
+ * @return {Promise<number>} The size of the remote image, in bytes.
  */
 async function getFileSize( imageUri ) {
 	const response = await fetch( imageUri, { method: 'HEAD' } );
@@ -101,7 +103,7 @@ const imageSizesByUri = {};
  *
  * @async
  * @param {string} imageUri URL for a remote image.
- * @returns {number|Promise<number>} The size of the remote image, in bytes.
+ * @return {number|Promise<number>} The size of the remote image, in bytes.
  */
 async function checkImageSize( imageUri ) {
 	if ( ! imageSizesByUri[ imageUri ] ) {
@@ -111,7 +113,7 @@ async function checkImageSize( imageUri ) {
 	return imageSizesByUri[ imageUri ];
 }
 
-const HMMediaWeightSidebar = ( ...args ) => {
+const HMMediaWeightSidebar = () => {
 	const {
 		attachments,
 		featuredImageId,
@@ -162,6 +164,7 @@ const HMMediaWeightSidebar = ( ...args ) => {
 		} );
 	}, [ targetImageURIs ] );
 
+	// eslint-disable-next-line no-shadow
 	const DisplayTotal = ( { imagesSize, videosSize } ) => {
 		const total = ( ( imagesSize + videosSize ) / MB_IN_B ).toFixed( 2 );
 		let sizeColor;
@@ -177,6 +180,7 @@ const HMMediaWeightSidebar = ( ...args ) => {
 		const warningMsg = total >= mediaThreshold ? (
 			<p className="description">
 				{ sprintf(
+					/* translators: %f: Maximum allowed size (in megabytes) for all media on page. */
 					__( 'Warning! The media in this page exceeds the recommended threshold of %fmb', 'hm-media-weight' ),
 					mediaThreshold
 				) }

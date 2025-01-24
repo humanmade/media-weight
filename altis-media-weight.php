@@ -47,7 +47,19 @@ function register_block_plugin_editor_scripts() {
 		'hm-media-weight',
 		'mediaWeightData',
 		[
-			'mediaThreshold' => apply_filters( 'altis_media_weight_threshold', 2.50 ),
+			/**
+			 * Filter the threshold at which a post is deemed "too heavy" due to media weight.
+			 *
+			 * @param float $threshold Maxmimum number of megabytes of media permitted per post.
+			 */
+			'mediaThreshold' => apply_filters( 'hm_media_weight_threshold', 2.50 ),
+			/**
+			 * Filter the expected maximum width (in pixels) for media displayed in post content.
+			 */
+			'contentColumnWidth' => apply_filters(
+				'hm_media_weight_content_column_width',
+				$GLOBALS['content_width'] ?? 1024
+			),
 		]
 	);
 }

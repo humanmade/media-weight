@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { media } from '@wordpress/icons';
 import { PluginSidebar, PluginSidebarMoreMenuItem } from '@wordpress/editor';
@@ -12,6 +12,8 @@ const { mediaThreshold } = window.mediaWeightData;
 
 const PLUGIN_NAME = 'hm-media-weight';
 const SIDEBAR_NAME = PLUGIN_NAME;
+const MB_IN_B = 1000000;
+const KB_IN_B = 1000;
 
 const getMediaBlocks = ( blocks ) => blocks.reduce(
 	( mediaBlocks, block ) => {
@@ -67,11 +69,54 @@ const useMediaBlocks = () => {
 	};
 };
 
+/**
+ * Use a HEAD request to measure the size of a remote file (in bytes).
+ *
+ * This is necessary because WordPress doesn't store the filesizes of
+ * dynamic (Tachyon/Photon) images in the database.
+ *
+ * @async
+ * @param {string} imageUri URL for a remote image.
+ * @returns {Promise<number>} The size of the remote image, in bytes.
+ */
+async function getFileSize( imageUri ) {
+	const response = await fetch( imageUri, { method: 'HEAD' } );
+
+	if ( ! response.ok ) {
+		throw new Error( `Failed to fetch: ${ response.status }` );
+	}
+
+	const contentLength = response.headers.get( 'Content-Length' );
+	if ( ! contentLength ) {
+		throw new Error( 'Content-Length header not found.' );
+	}
+
+	return parseInt( contentLength, 10 );
+}
+
+const imageSizesByUri = {};
+
+/**
+ * Cached wrapper for getFileSize, to avoid repeatedly checking the same image.
+ *
+ * @async
+ * @param {string} imageUri URL for a remote image.
+ * @returns {number|Promise<number>} The size of the remote image, in bytes.
+ */
+async function checkImageSize( imageUri ) {
+	if ( ! imageSizesByUri[ imageUri ] ) {
+		imageSizesByUri[ imageUri ] = getFileSize( imageUri );
+	}
+
+	return imageSizesByUri[ imageUri ];
+}
+
 const HMMediaWeightSidebar = ( ...args ) => {
 	const {
 		attachments,
 		featuredImageId,
 		blocksByAttributeId,
+		mediaBlocks,
 		imageCount,
 		videoCount
 	} = useMediaBlocks();
@@ -79,8 +124,36 @@ const HMMediaWeightSidebar = ( ...args ) => {
 	let imagesSize = 0;
 	let videosSize = 0;
 
+	const [ resolvedRemoteImageSizes, setResolvedImageSizes ] = useState( {} );
+	useEffect( () => {
+		const imageSizeRequests = attachments
+			.map( ( attachment ) => {
+				if ( attachment.media_type !== 'image' ) {
+					return null;
+				}
+				const associatedBlockClientId = blocksByAttributeId[ attachment.id ];
+				const associatedBlock = mediaBlocks.find( ( block ) => block.clientId === associatedBlockClientId );
+				const imageUri = attachment?.media_details?.sizes?.[ associatedBlock?.attributes?.sizeSlug ]?.source_url || null;
+				if ( ! imageUri ) {
+					return null;
+				}
+				return [ attachment.id, imageUri ];
+			} )
+			.filter( Boolean )
+			.map( ( [ id, uri ] ) => {
+				return checkImageSize( uri ).then( ( size ) => [ id, size ] );
+			} );
+		Promise.all( imageSizeRequests ).then( ( sizes ) => {
+			const resolvedSizes = sizes.reduce( ( memo, [ id, size ] ) => {
+				memo[ id ] = size;
+				return memo;
+			}, {} );
+			setResolvedImageSizes( resolvedSizes );
+		} );
+	}, [ attachments, mediaBlocks ] );
+
 	const DisplayTotal = ( { imagesSize, videosSize } ) => {
-		const total = ( imagesSize + videosSize ).toFixed( 2 );
+		const total = ( ( imagesSize + videosSize ) / MB_IN_B ).toFixed( 2 );
 		let sizeColor;
 
 		if ( total >= 0 && total <= ( mediaThreshold / 2 ) ) {
@@ -102,8 +175,8 @@ const HMMediaWeightSidebar = ( ...args ) => {
 
 		return (
 			<>
-				<p>{ __( 'Images total', 'hm-media-weight' ) }: { imagesSize.toFixed( 2 ) }mb</p>
-				<p>{ __( 'Videos total', 'hm-media-weight' ) }: { videosSize.toFixed( 2 ) }mb</p>
+				<p>{ __( 'Images total', 'hm-media-weight' ) }: { ( imagesSize / MB_IN_B ).toFixed( 2 ) }mb</p>
+				<p>{ __( 'Videos total', 'hm-media-weight' ) }: { ( videosSize / MB_IN_B ).toFixed( 2 ) }mb</p>
 				<p>
 					<strong>
 						{ __( 'Total media size', 'hm-media-weight' ) }: { ' ' }
@@ -143,11 +216,10 @@ const HMMediaWeightSidebar = ( ...args ) => {
 					title={ __( 'Individual Media Items', 'hm-media-weight' ) }
 				>
 					{ attachments.map( ( attachment ) => {
-						const associatedBlockClientId = blocksByAttributeId[ attachment.id ];
 						const blockButton = attachment.id !== featuredImageId ? (
 							<Button
 								className="components-button is-compact is-secondary"
-								onClick={ () => selectBlock( associatedBlockClientId ) }
+								onClick={ () => selectBlock( blocksByAttributeId[ attachment.id ] ) }
 							>
 								{ __( 'Select associated block', 'hm-media-weight' ) }
 							</Button> ) : '';
@@ -156,20 +228,37 @@ const HMMediaWeightSidebar = ( ...args ) => {
 						if ( attachment.id === featuredImageId ) {
 							type = __( 'Featured image', 'hm-media-weight' );
 						}
-						const mediaSize = attachment.media_details.filesize /  1000000;
+						let mediaSize = attachment.media_details.filesize;
 
 						if ( attachment.media_type === 'image' ) {
-							imagesSize = imagesSize + mediaSize;
+							const remoteImageSize = resolvedRemoteImageSizes[ attachment.id ];
+							console.log( { id: attachment.id, remoteImageSize } );
+							imagesSize = imagesSize + ( remoteImageSize || mediaSize );
 						} else {
 							videosSize = videosSize + mediaSize;
 						}
 
+						const thumbnail = attachment.media_type === 'image'
+							? ( attachment?.media_details?.sizes?.thumbnail?.source_url || attachment.source_url )
+							: null;
+
 						return (
 							<PanelRow key={ `media-details-${ attachment.id }` }>
 								<div>
+									{ thumbnail ? (
+										<img
+											src={ thumbnail }
+											alt=""
+											style={ { maxWidth: '100%' } }
+										/>
+									) : null }
 									<p>
 										<strong>
-											{ type }: { mediaSize.toFixed( 2 ) }mb
+											{ type }: {
+												( mediaSize < MB_IN_B )
+													? `${ ( mediaSize / KB_IN_B ).toFixed( 2 ) }kb`
+													: `${ ( mediaSize / MB_IN_B ).toFixed( 2 ) }mb`
+											}
 										</strong>
 									</p>
 									<p>

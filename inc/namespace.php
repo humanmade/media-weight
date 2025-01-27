@@ -11,6 +11,7 @@ namespace HM_Media_Weight;
 function bootstrap() : void {
 	add_action( 'enqueue_block_editor_assets', __NAMESPACE__ . '\\register_block_plugin_editor_scripts' );
 	add_action( 'enqueue_block_editor_assets', __NAMESPACE__ . '\\maybe_warn_on_script_debug_mode' );
+}
 
 /**
  * Registers the block plugin script bundle.
@@ -26,7 +27,7 @@ function register_block_plugin_editor_scripts() {
 		'hm-media-weight',
 		plugins_url( 'build/index.js', __DIR__ ),
 		$asset_file['dependencies'],
-		$asset_file['version']
+		( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? time() : $asset_file['version']
 	);
 
 	wp_localize_script(
@@ -61,6 +62,15 @@ function register_block_plugin_editor_scripts() {
  * Show a warning if SCRIPT_DEBUG is off while we're running the dev server.
  */
 function maybe_warn_on_script_debug_mode() {
+	if ( wp_get_environment_type() !== 'local' ) {
+		return;
+	}
+
+	if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) {
+		// SCRIPT_DEBUG configured correctly.
+		return;
+	}
+
 	// Only render this notice in the post editor.
 	if ( ( get_current_screen()->base ?? '' ) !== 'post' ) {
 		return;
@@ -70,11 +80,6 @@ function maybe_warn_on_script_debug_mode() {
 
 	if ( ! in_array( 'wp-react-refresh-runtime', $asset_file['dependencies'] ?? [], true ) ) {
 		// Either not in hot-reload mode, or plugin isn't currently built.
-		return;
-	}
-
-	if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) {
-		// SCRIPT_DEBUG configured correctly.
 		return;
 	}
 

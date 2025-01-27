@@ -11,13 +11,12 @@ namespace HM_Media_Weight;
 function bootstrap() : void {
 	add_action( 'enqueue_block_editor_assets', __NAMESPACE__ . '\\register_block_plugin_editor_scripts' );
 	add_action( 'enqueue_block_editor_assets', __NAMESPACE__ . '\\maybe_warn_on_script_debug_mode' );
-}
 
 /**
  * Registers the block plugin script bundle.
  */
 function register_block_plugin_editor_scripts() {
-	$asset_file = include( plugin_dir_path( __FILE__ ) . 'build/index.asset.php');
+	$asset_file = include( plugin_dir_path( __DIR__ ) . 'build/index.asset.php' );
 
 	if ( $asset_file === false ) {
 		return;
@@ -25,7 +24,7 @@ function register_block_plugin_editor_scripts() {
 
 	wp_enqueue_script(
 		'hm-media-weight',
-		plugins_url( 'build/index.js', __FILE__ ),
+		plugins_url( 'build/index.js', __DIR__ ),
 		$asset_file['dependencies'],
 		$asset_file['version']
 	);
@@ -67,7 +66,7 @@ function maybe_warn_on_script_debug_mode() {
 		return;
 	}
 
-	$asset_file = include( plugin_dir_path( __FILE__ ) . 'build/index.asset.php');
+	$asset_file = include( plugin_dir_path( __DIR__ ) . 'build/index.asset.php');
 
 	if ( ! in_array( 'wp-react-refresh-runtime', $asset_file['dependencies'] ?? [], true ) ) {
 		// Either not in hot-reload mode, or plugin isn't currently built.

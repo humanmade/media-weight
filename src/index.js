@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { media } from '@wordpress/icons';
 import { PluginSidebar, PluginSidebarMoreMenuItem } from '@wordpress/editor';
 import { PanelRow, PanelBody, Button } from '@wordpress/components';
 import { registerPlugin, unregisterPlugin } from '@wordpress/plugins';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { store as blockEditorStore } from '@wordpress/block-editor';
 import { useEntityRecords } from '@wordpress/core-data';
+
+import { ReactComponent as ScalesIcon } from './assets/scale-icon.svg';
 
 const { mediaThreshold } = window.mediaWeightData;
 
@@ -311,7 +312,7 @@ const HMMediaWeightSidebar = () => {
 };
 
 registerPlugin( PLUGIN_NAME, {
-	icon: media,
+	icon: ScalesIcon,
 	render: HMMediaWeightSidebar,
 } );
 

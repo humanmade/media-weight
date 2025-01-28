@@ -58,6 +58,7 @@ const useMediaBlocks = () => {
 		per_page: imageIds.length,
 		include: imageIds,
 	} )?.records || [];
+	console.log( imageRecords.reduce( ( memo, { id, meta } ) => ( { ...memo, [ id ]: meta } ), {} ) );
 	const videoRecords = useEntityRecords( 'postType', 'attachment', {
 		per_page: videoIds.length,
 		include: videoIds,

@@ -1,9 +1,9 @@
 <?php
 /**
- * Main plugin namespace.
+ * Asset-related functionality.
  */
 
-namespace HM_Media_Weight;
+namespace HM_Media_Weight\Assets;
 
 /**
  * Connect namespace functions to actions and hooks.
@@ -17,15 +17,18 @@ function bootstrap() : void {
  * Registers the block plugin script bundle.
  */
 function register_block_plugin_editor_scripts() {
-	$asset_file = include( plugin_dir_path( __DIR__ ) . 'build/index.asset.php' );
+	$asset_file_path = plugin_dir_path( __DIR__ ) . 'build/index.asset.php';
+	$asset_file = include( $asset_file_path );
 
 	if ( $asset_file === false ) {
 		return;
 	}
 
+	$asset_uri = plugins_url( 'build/index.js', __DIR__ );
+
 	wp_enqueue_script(
 		'hm-media-weight',
-		plugins_url( 'build/index.js', __DIR__ ),
+		$asset_uri,
 		$asset_file['dependencies'],
 		( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? time() : $asset_file['version']
 	);

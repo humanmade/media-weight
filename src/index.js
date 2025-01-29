@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { media } from '@wordpress/icons';
 import { PluginSidebar, PluginSidebarMoreMenuItem } from '@wordpress/editor';
 import { PanelRow, PanelBody, Button } from '@wordpress/components';
 import { registerPlugin, unregisterPlugin } from '@wordpress/plugins';
@@ -8,10 +7,14 @@ import { useDispatch, useSelect } from '@wordpress/data';
 import { store as blockEditorStore } from '@wordpress/block-editor';
 import { useEntityRecords } from '@wordpress/core-data';
 
-const { mediaThreshold } = window.mediaWeightData;
+import { ReactComponent as ScalesIcon } from './assets/scale-icon.svg';
 
-const PLUGIN_NAME = 'altis-media-weight';
+const { mediaThreshold, featuredImageSize } = window.mediaWeightData;
+
+const PLUGIN_NAME = 'hm-media-weight';
 const SIDEBAR_NAME = PLUGIN_NAME;
+const MB_IN_B = 1024 * 1024;
+const KB_IN_B = 1024;
 
 const getMediaBlocks = ( blocks ) => blocks.reduce(
 	( mediaBlocks, block ) => {
@@ -27,14 +30,15 @@ const getMediaBlocks = ( blocks ) => blocks.reduce(
 );
 
 const useMediaBlocks = () => {
-	const blocks = useSelect( ( select ) => select( blockEditorStore ).getBlocks() );
+	const mediaBlocks = useSelect( ( select ) => getMediaBlocks( select( blockEditorStore ).getBlocks() ) );
 	const featuredImageId = useSelect( ( select ) => select( 'core/editor' ).getEditedPostAttribute( 'featured_media' ) );
+
+	/* eslint-disable no-shadow */
 	const { imageIds, videoIds, blocksByAttributeId } = useMemo( () => {
-		const mediaBlocks = getMediaBlocks( blocks );
 		const imageIds = [];
 		const videoIds = [];
 		const blocksByAttributeId = {};
-		for ( let block of mediaBlocks ) {
+		for ( const block of mediaBlocks ) {
 			if ( ! block.attributes?.id ) {
 				continue;
 			}
@@ -49,7 +53,9 @@ const useMediaBlocks = () => {
 			imageIds.push( featuredImageId );
 		}
 		return { imageIds, videoIds, blocksByAttributeId };
-	}, [ blocks, featuredImageId ] );
+	}, [ mediaBlocks, featuredImageId ] );
+	/* eslint-enable no-shadow */
+
 	const imageRecords = useEntityRecords( 'postType', 'attachment', {
 		per_page: imageIds.length,
 		include: imageIds,
@@ -58,20 +64,23 @@ const useMediaBlocks = () => {
 		per_page: videoIds.length,
 		include: videoIds,
 	} )?.records || [];
+
 	return {
 		attachments: imageRecords.concat( videoRecords ),
 		featuredImageId,
 		blocksByAttributeId,
+		mediaBlocks,
 		imageCount: imageIds.length,
 		videoCount: videoIds.length,
 	};
 };
 
-const AltisMediaWeightSidebar = ( ...args ) => {
+const HMMediaWeightSidebar = () => {
 	const {
 		attachments,
 		featuredImageId,
 		blocksByAttributeId,
+		mediaBlocks,
 		imageCount,
 		videoCount
 	} = useMediaBlocks();
@@ -79,8 +88,9 @@ const AltisMediaWeightSidebar = ( ...args ) => {
 	let imagesSize = 0;
 	let videosSize = 0;
 
+	// eslint-disable-next-line no-shadow
 	const DisplayTotal = ( { imagesSize, videosSize } ) => {
-		const total = ( imagesSize + videosSize ).toFixed( 2 );
+		const total = ( ( imagesSize + videosSize ) / MB_IN_B ).toFixed( 2 );
 		let sizeColor;
 
 		if ( total >= 0 && total <= ( mediaThreshold / 2 ) ) {
@@ -94,7 +104,8 @@ const AltisMediaWeightSidebar = ( ...args ) => {
 		const warningMsg = total >= mediaThreshold ? (
 			<p className="description">
 				{ sprintf(
-					__( 'Warning! The media in this page exceeds the recommended threshold of %fmb', 'altis-media-weight' ),
+					/* translators: %f: Maximum allowed size (in megabytes) for all media on page. */
+					__( 'Warning! The media in this page exceeds the recommended threshold of %fmb', 'hm-media-weight' ),
 					mediaThreshold
 				) }
 			</p>
@@ -102,11 +113,9 @@ const AltisMediaWeightSidebar = ( ...args ) => {
 
 		return (
 			<>
-				<p>{ __( 'Images total', 'altis-media-weight' ) }: { imagesSize.toFixed( 2 ) }mb</p>
-				<p>{ __( 'Videos total', 'altis-media-weight' ) }: { videosSize.toFixed( 2 ) }mb</p>
 				<p>
 					<strong>
-						{ __( 'Total media size', 'altis-media-weight' ) }: { ' ' }
+						{ __( 'Total media size', 'hm-media-weight' ) }: { ' ' }
 						<span style={
 							{
 								backgroundColor: sizeColor,
@@ -119,64 +128,103 @@ const AltisMediaWeightSidebar = ( ...args ) => {
 						</span>
 					</strong>
 				</p>
+				<p>{ __( 'Images total', 'hm-media-weight' ) }: { ( imagesSize / MB_IN_B ).toFixed( 2 ) }mb</p>
+				<p>{ __( 'Videos total', 'hm-media-weight' ) }: { ( videosSize / MB_IN_B ).toFixed( 2 ) }mb</p>
 				{ warningMsg }
 			</>
 		);
 	}
 
+	const attachmentSizeDetails = attachments.map( ( attachment ) => {
+		const associatedBlockClientId = blocksByAttributeId[ attachment.id ];
+		const blockButton = attachment.id !== featuredImageId ? (
+			<Button
+				className="components-button is-compact is-secondary"
+				onClick={ () => selectBlock( associatedBlockClientId ) }
+			>
+				{ __( 'Select associated block', 'hm-media-weight' ) }
+			</Button> ) : '';
+
+		let type = attachment.media_type === 'image' ? __( 'Image', 'hm-media-weight' ) : __( 'Video', 'hm-media-weight' );
+		if ( attachment.id === featuredImageId ) {
+			type = __( 'Featured image', 'hm-media-weight' );
+		}
+		let mediaSize = attachment.media_details.filesize;
+
+		if ( attachment.media_type === 'image' ) {
+			const requestedSize = attachment.id !== featuredImageId
+				? mediaBlocks.find( ( block ) => block.clientId === associatedBlockClientId )?.attributes?.sizeSlug
+				: ( featuredImageSize || 'full' );
+			// Swap in the actual measured size of the target image, if available.
+			mediaSize = attachment.meta?.intermediate_image_filesizes?.[ requestedSize ] || mediaSize;
+			imagesSize = imagesSize + mediaSize;
+		} else {
+			videosSize = videosSize + mediaSize;
+		}
+
+		const thumbnail = attachment.media_type === 'image'
+			? ( attachment?.media_details?.sizes?.thumbnail?.source_url || attachment.source_url )
+			: null;
+
+		return {
+			attachment,
+			thumbnail,
+			type,
+			mediaSize,
+			blockButton
+		};
+	} );
+
 	return (
 		<>
 			<PluginSidebarMoreMenuItem target={ SIDEBAR_NAME }>
-				{ __( 'Media Weight sidebar', 'altis-media-weight' ) }
+				{ __( 'Media Weight sidebar', 'hm-media-weight' ) }
 			</PluginSidebarMoreMenuItem>
-			<PluginSidebar className={ SIDEBAR_NAME } name={ SIDEBAR_NAME } title={ __( 'Media Weight', 'altis-media-weight' ) }>
+			<PluginSidebar className={ SIDEBAR_NAME } name={ SIDEBAR_NAME } title={ __( 'Media Weight', 'hm-media-weight' ) }>
 				<PanelBody
-					initialOpen={ false }
-					title={ __( 'Total Media Items', 'altis-media-weight' ) }
+					initialOpen={ true }
+					title={ __( 'Total Media Items', 'hm-media-weight' ) }
 				>
 					<p>Images: { imageCount }</p>
 					<p>Videos: { videoCount }</p>
+
+					<DisplayTotal
+						imagesSize={ imagesSize }
+						videosSize={ videosSize }
+					/>
 				</PanelBody>
 
 				<PanelBody
 					initialOpen={ false }
-					title={ __( 'Individual Media Items', 'altis-media-weight' ) }
+					title={ __( 'Individual Media Items', 'hm-media-weight' ) }
 				>
-					{ attachments.map( ( attachment ) => {
-						const blockButton = attachment.id !== featuredImageId ? (
-							<Button
-								className="components-button is-compact is-secondary"
-								onClick={ () => selectBlock( blocksByAttributeId[ attachment.id ] ) }
-							>
-								{ __( 'Select associated block', 'altis-media-weight' ) }
-							</Button> ) : '';
-
-						let type = attachment.media_type === 'image' ? __( 'Image', 'altis-media-weight' ) : __( 'Video', 'altis-media-weight' );
-						if ( attachment.id === featuredImageId ) {
-							type = __( 'Featured image', 'altis-media-weight' );
-						}
-						const mediaSize = attachment.media_details.filesize /  1000000;
-
-						if ( attachment.media_type === 'image' ) {
-							imagesSize = imagesSize + mediaSize;
-						} else {
-							videosSize = videosSize + mediaSize;
-						}
+					{ attachmentSizeDetails.map( ( { attachment, thumbnail, type, mediaSize, blockButton } ) => {
 
 						return (
 							<PanelRow key={ `media-details-${ attachment.id }` }>
 								<div>
+									{ thumbnail ? (
+										<img
+											src={ thumbnail }
+											alt=""
+											style={ { maxWidth: '100%' } }
+										/>
+									) : null }
 									<p>
 										<strong>
-											{ type }: { mediaSize.toFixed( 2 ) }mb
+											{ type }: {
+												( mediaSize < MB_IN_B )
+													? `${ ( mediaSize / KB_IN_B ).toFixed( 2 ) }kb`
+													: `${ ( mediaSize / MB_IN_B ).toFixed( 2 ) }mb`
+											}
 										</strong>
 									</p>
 									<p>
 										Attachment ID: { attachment.id }<br />
 										<small><a href={ attachment.link }>Go to the attachment post &rsaquo;</a></small>
 									</p>
-									<details style={ { margin: '0.5rem 0 1rem' } }>
-										<summary>{ __( 'View entity record JSON', 'altis-media-weight' ) }</summary>
+									<details style={ { display: 'none', margin: '0.5rem 0 1rem' } }>
+										<summary>{ __( 'View entity record JSON', 'hm-media-weight' ) }</summary>
 										<small>
 											<pre>
 												{ JSON.stringify( attachment, null, 2 ) }
@@ -191,24 +239,14 @@ const AltisMediaWeightSidebar = ( ...args ) => {
 						);
 					} ) }
 				</PanelBody>
-
-				<PanelBody
-					initialOpen
-					title={ __( 'Total Media Size', 'altis-media-weight' ) }
-				>
-					<DisplayTotal
-						imagesSize={ imagesSize }
-						videosSize={ videosSize }
-					/>
-				</PanelBody>
 			</PluginSidebar>
 		</>
 	);
 };
 
 registerPlugin( PLUGIN_NAME, {
-	icon: media,
-	render: AltisMediaWeightSidebar,
+	icon: ScalesIcon,
+	render: HMMediaWeightSidebar,
 } );
 
 // Block HMR boilerplate.

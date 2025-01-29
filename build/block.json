@@ -1,0 +1,8 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "title": "HM Media Weight block editor plugin",
+  "description": "Entrypoint for editor bundle which registers a plugin to monitor media usage.",
+  "textdomain": "hm-media-weight",
+  "editorScript": "file:./index.js"
+}

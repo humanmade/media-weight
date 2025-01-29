@@ -1,4 +1,4 @@
-# Altis Media Weight
+# HM Media Weight
 
 This is a WIP plugin to examine the blocks added to a post and provide informative, in-editor warnings if the page weight grows to a prohibitive size.
 
@@ -15,9 +15,9 @@ Ideally, it will eventually make accurate estimations of aggregate page size bas
 Download this plugin, activate it within WordPress, and run the Node build. In Altis, this can be done via the following commands (run them from a terminal in the project `content/plugins/` directory):
 
 ```
-git clone git@github.com:humanmade/altis-media-weight.git
-composer server cli -- plugin activate altis-media-weight
-cd altis-media-weight
+git clone git@github.com:humanmade/hm-media-weight.git
+composer server cli -- plugin activate hm-media-weight
+cd hm-media-weight
 nvm use
 npm install
 npm run build

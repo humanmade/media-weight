@@ -1,5 +1,5 @@
 {
-	"name": "altis-media-weight",
+	"name": "hm-media-weight",
 	"version": "0.1.0",
 	"description": "Block Editor plugin to monitor media bandwidth usage.",
 	"author": "Human Made Limited",
@@ -15,6 +15,9 @@
 		"start": "wp-scripts start --hot"
 	},
 	"devDependencies": {
-		"@wordpress/scripts": "^30.3.0"
+		"@wordpress/scripts": "^30.9.0"
+	},
+	"dependencies": {
+		"@wordpress/icons": "^10.16.0"
 	}
 }

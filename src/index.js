@@ -113,8 +113,6 @@ const HMMediaWeightSidebar = () => {
 
 		return (
 			<>
-				<p>{ __( 'Images total', 'hm-media-weight' ) }: { ( imagesSize / MB_IN_B ).toFixed( 2 ) }mb</p>
-				<p>{ __( 'Videos total', 'hm-media-weight' ) }: { ( videosSize / MB_IN_B ).toFixed( 2 ) }mb</p>
 				<p>
 					<strong>
 						{ __( 'Total media size', 'hm-media-weight' ) }: { ' ' }
@@ -130,10 +128,52 @@ const HMMediaWeightSidebar = () => {
 						</span>
 					</strong>
 				</p>
+				<p>{ __( 'Images total', 'hm-media-weight' ) }: { ( imagesSize / MB_IN_B ).toFixed( 2 ) }mb</p>
+				<p>{ __( 'Videos total', 'hm-media-weight' ) }: { ( videosSize / MB_IN_B ).toFixed( 2 ) }mb</p>
 				{ warningMsg }
 			</>
 		);
 	}
+
+	const attachmentSizeDetails = attachments.map( ( attachment ) => {
+		const associatedBlockClientId = blocksByAttributeId[ attachment.id ];
+		const blockButton = attachment.id !== featuredImageId ? (
+			<Button
+				className="components-button is-compact is-secondary"
+				onClick={ () => selectBlock( associatedBlockClientId ) }
+			>
+				{ __( 'Select associated block', 'hm-media-weight' ) }
+			</Button> ) : '';
+
+		let type = attachment.media_type === 'image' ? __( 'Image', 'hm-media-weight' ) : __( 'Video', 'hm-media-weight' );
+		if ( attachment.id === featuredImageId ) {
+			type = __( 'Featured image', 'hm-media-weight' );
+		}
+		let mediaSize = attachment.media_details.filesize;
+
+		if ( attachment.media_type === 'image' ) {
+			const requestedSize = attachment.id !== featuredImageId
+				? mediaBlocks.find( ( block ) => block.clientId === associatedBlockClientId )?.attributes?.sizeSlug
+				: ( featuredImageSize || 'full' );
+			// Swap in the actual measured size of the target image, if available.
+			mediaSize = attachment.meta?.intermediate_image_filesizes?.[ requestedSize ] || mediaSize;
+			imagesSize = imagesSize + mediaSize;
+		} else {
+			videosSize = videosSize + mediaSize;
+		}
+
+		const thumbnail = attachment.media_type === 'image'
+			? ( attachment?.media_details?.sizes?.thumbnail?.source_url || attachment.source_url )
+			: null;
+
+		return {
+			attachment,
+			thumbnail,
+			type,
+			mediaSize,
+			blockButton
+		};
+	} );
 
 	return (
 		<>
@@ -147,42 +187,18 @@ const HMMediaWeightSidebar = () => {
 				>
 					<p>Images: { imageCount }</p>
 					<p>Videos: { videoCount }</p>
+
+					<DisplayTotal
+						imagesSize={ imagesSize }
+						videosSize={ videosSize }
+					/>
 				</PanelBody>
 
 				<PanelBody
 					initialOpen={ false }
 					title={ __( 'Individual Media Items', 'hm-media-weight' ) }
 				>
-					{ attachments.map( ( attachment ) => {
-						const associatedBlockClientId = blocksByAttributeId[ attachment.id ];
-						const blockButton = attachment.id !== featuredImageId ? (
-							<Button
-								className="components-button is-compact is-secondary"
-								onClick={ () => selectBlock( associatedBlockClientId ) }
-							>
-								{ __( 'Select associated block', 'hm-media-weight' ) }
-							</Button> ) : '';
-
-						let type = attachment.media_type === 'image' ? __( 'Image', 'hm-media-weight' ) : __( 'Video', 'hm-media-weight' );
-						if ( attachment.id === featuredImageId ) {
-							type = __( 'Featured image', 'hm-media-weight' );
-						}
-						let mediaSize = attachment.media_details.filesize;
-
-						if ( attachment.media_type === 'image' ) {
-							const requestedSize = attachment.id !== featuredImageId
-								? mediaBlocks.find( ( block ) => block.clientId === associatedBlockClientId )?.attributes?.sizeSlug
-								: ( featuredImageSize || 'full' );
-							// Swap in the actual measured size of the target image, if available.
-							mediaSize = attachment.meta?.intermediate_image_filesizes?.[ requestedSize ] || mediaSize;
-							imagesSize = imagesSize + mediaSize;
-						} else {
-							videosSize = videosSize + mediaSize;
-						}
-
-						const thumbnail = attachment.media_type === 'image'
-							? ( attachment?.media_details?.sizes?.thumbnail?.source_url || attachment.source_url )
-							: null;
+					{ attachmentSizeDetails.map( ( { attachment, thumbnail, type, mediaSize, blockButton } ) => {
 
 						return (
 							<PanelRow key={ `media-details-${ attachment.id }` }>
@@ -222,16 +238,6 @@ const HMMediaWeightSidebar = () => {
 							</PanelRow>
 						);
 					} ) }
-				</PanelBody>
-
-				<PanelBody
-					initialOpen
-					title={ __( 'Total Media Size', 'hm-media-weight' ) }
-				>
-					<DisplayTotal
-						imagesSize={ imagesSize }
-						videosSize={ videosSize }
-					/>
 				</PanelBody>
 			</PluginSidebar>
 		</>

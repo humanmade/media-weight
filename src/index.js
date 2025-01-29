@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { PluginSidebar, PluginSidebarMoreMenuItem } from '@wordpress/editor';
 import { PanelRow, PanelBody, Button } from '@wordpress/components';
@@ -55,6 +55,7 @@ const useMediaBlocks = () => {
 		return { imageIds, videoIds, blocksByAttributeId };
 	}, [ mediaBlocks, featuredImageId ] );
 	/* eslint-enable no-shadow */
+
 	const imageRecords = useEntityRecords( 'postType', 'attachment', {
 		per_page: imageIds.length,
 		include: imageIds,

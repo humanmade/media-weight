@@ -55,19 +55,9 @@ function register_block_plugin_editor_scripts() {
 			 */
 			'mediaThreshold' => apply_filters( 'hm_media_weight_threshold', 2.50 ),
 			/**
-			 * Filter the expected maximum width (in pixels) for media displayed in post content.
-			 */
-			'contentColumnWidth' => apply_filters(
-				'hm_media_weight_content_column_width',
-				$GLOBALS['content_width'] ?? 1024
-			),
-			/**
 			 * Filter the expected maximum width (in pixels) for a desktop featured image.
 			 */
-			'featuredImageWidth' => apply_filters(
-				'hm_media_weight_featured_image_width',
-				$GLOBALS['content_width'] ?? 1024
-			),
+			'featuredImageSize' => apply_filters( 'hm_media_weight_featured_image_size_slug', 'large' ),
 		]
 	);
 }

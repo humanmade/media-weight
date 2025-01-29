@@ -9,7 +9,7 @@ import { useEntityRecords } from '@wordpress/core-data';
 
 import { ReactComponent as ScalesIcon } from './assets/scale-icon.svg';
 
-const { mediaThreshold } = window.mediaWeightData;
+const { mediaThreshold, featuredImageSize } = window.mediaWeightData;
 
 const PLUGIN_NAME = 'hm-media-weight';
 const SIDEBAR_NAME = PLUGIN_NAME;
@@ -169,7 +169,9 @@ const HMMediaWeightSidebar = () => {
 						let mediaSize = attachment.media_details.filesize;
 
 						if ( attachment.media_type === 'image' ) {
-							const requestedSize = mediaBlocks.find( ( block ) => block.clientId === associatedBlockClientId )?.attributes?.sizeSlug;
+							const requestedSize = attachment.id !== featuredImageId
+								? mediaBlocks.find( ( block ) => block.clientId === associatedBlockClientId )?.attributes?.sizeSlug
+								: ( featuredImageSize || 'full' );
 							// Swap in the actual measured size of the target image, if available.
 							mediaSize = attachment.meta?.intermediate_image_filesizes?.[ requestedSize ] || mediaSize;
 							imagesSize = imagesSize + mediaSize;

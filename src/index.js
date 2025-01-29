@@ -13,8 +13,8 @@ const { mediaThreshold, featuredImageSize } = window.mediaWeightData;
 
 const PLUGIN_NAME = 'hm-media-weight';
 const SIDEBAR_NAME = PLUGIN_NAME;
-const MB_IN_B = 1000000;
-const KB_IN_B = 1000;
+const MB_IN_B = 1024 * 1024;
+const KB_IN_B = 1024;
 
 const getMediaBlocks = ( blocks ) => blocks.reduce(
 	( mediaBlocks, block ) => {

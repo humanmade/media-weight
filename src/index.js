@@ -32,6 +32,7 @@ const getMediaBlocks = ( blocks ) => blocks.reduce(
 const useMediaBlocks = () => {
 	const mediaBlocks = useSelect( ( select ) => getMediaBlocks( select( blockEditorStore ).getBlocks() ) );
 	const featuredImageId = useSelect( ( select ) => select( 'core/editor' ).getEditedPostAttribute( 'featured_media' ) );
+
 	/* eslint-disable no-shadow */
 	const { imageIds, videoIds, blocksByAttributeId } = useMemo( () => {
 		const imageIds = [];
@@ -58,11 +59,11 @@ const useMediaBlocks = () => {
 		per_page: imageIds.length,
 		include: imageIds,
 	} )?.records || [];
-	console.log( imageRecords.reduce( ( memo, { id, meta } ) => ( { ...memo, [ id ]: meta } ), {} ) );
 	const videoRecords = useEntityRecords( 'postType', 'attachment', {
 		per_page: videoIds.length,
 		include: videoIds,
 	} )?.records || [];
+
 	return {
 		attachments: imageRecords.concat( videoRecords ),
 		featuredImageId,
@@ -72,48 +73,6 @@ const useMediaBlocks = () => {
 		videoCount: videoIds.length,
 	};
 };
-
-/**
- * Use a HEAD request to measure the size of a remote file (in bytes).
- *
- * This is necessary because WordPress doesn't store the filesizes of
- * dynamic (Tachyon/Photon) images in the database.
- *
- * @async
- * @param {string} imageUri URL for a remote image.
- * @return {Promise<number>} The size of the remote image, in bytes.
- */
-async function getFileSize( imageUri ) {
-	const response = await fetch( imageUri, { method: 'HEAD' } );
-
-	if ( ! response.ok ) {
-		throw new Error( `Failed to fetch: ${ response.status }` );
-	}
-
-	const contentLength = response.headers.get( 'Content-Length' );
-	if ( ! contentLength ) {
-		throw new Error( 'Content-Length header not found.' );
-	}
-
-	return parseInt( contentLength, 10 );
-}
-
-const imageSizesByUri = {};
-
-/**
- * Cached wrapper for getFileSize, to avoid repeatedly checking the same image.
- *
- * @async
- * @param {string} imageUri URL for a remote image.
- * @return {number|Promise<number>} The size of the remote image, in bytes.
- */
-async function checkImageSize( imageUri ) {
-	if ( ! imageSizesByUri[ imageUri ] ) {
-		imageSizesByUri[ imageUri ] = getFileSize( imageUri );
-	}
-
-	return imageSizesByUri[ imageUri ];
-}
 
 const HMMediaWeightSidebar = () => {
 	const {
@@ -127,44 +86,6 @@ const HMMediaWeightSidebar = () => {
 	const { selectBlock } = useDispatch( blockEditorStore );
 	let imagesSize = 0;
 	let videosSize = 0;
-
-	const [ resolvedRemoteImageSizes, setResolvedImageSizes ] = useState( {} );
-	let targetImageURIs = attachments
-		.map( ( attachment ) => {
-			if ( attachment.media_type !== 'image' ) {
-				return null;
-			}
-			if ( attachment.id === featuredImageId ) {
-				// TODO: Understand via filters the expected size of a featured image,
-				// and report the URI of the expected target file for measurement.
-				return null;
-			}
-			const associatedBlockClientId = blocksByAttributeId[ attachment.id ];
-			const associatedBlock = mediaBlocks.find( ( block ) => block.clientId === associatedBlockClientId );
-			const imageUri = attachment?.media_details?.sizes?.[ associatedBlock?.attributes?.sizeSlug ]?.source_url || null;
-			if ( ! imageUri ) {
-				return null;
-			}
-			return [ attachment.id, imageUri ];
-		} )
-		.filter( Boolean );
-
-	// Create a stable reference for triggering useEffect.
-	targetImageURIs = JSON.stringify( targetImageURIs );
-
-	useEffect( () => {
-		const imageSizeRequests = JSON.parse( targetImageURIs )
-			.map( ( [ id, uri ] ) => {
-				return checkImageSize( uri ).then( ( size ) => [ id, size ] );
-			} );
-		Promise.all( imageSizeRequests ).then( ( sizes ) => {
-			const resolvedSizes = sizes.reduce( ( memo, [ id, size ] ) => {
-				memo[ id ] = size;
-				return memo;
-			}, {} );
-			setResolvedImageSizes( resolvedSizes );
-		} );
-	}, [ targetImageURIs ] );
 
 	// eslint-disable-next-line no-shadow
 	const DisplayTotal = ( { imagesSize, videosSize } ) => {
@@ -232,10 +153,11 @@ const HMMediaWeightSidebar = () => {
 					title={ __( 'Individual Media Items', 'hm-media-weight' ) }
 				>
 					{ attachments.map( ( attachment ) => {
+						const associatedBlockClientId = blocksByAttributeId[ attachment.id ];
 						const blockButton = attachment.id !== featuredImageId ? (
 							<Button
 								className="components-button is-compact is-secondary"
-								onClick={ () => selectBlock( blocksByAttributeId[ attachment.id ] ) }
+								onClick={ () => selectBlock( associatedBlockClientId ) }
 							>
 								{ __( 'Select associated block', 'hm-media-weight' ) }
 							</Button> ) : '';
@@ -247,9 +169,10 @@ const HMMediaWeightSidebar = () => {
 						let mediaSize = attachment.media_details.filesize;
 
 						if ( attachment.media_type === 'image' ) {
-							const remoteImageSize = resolvedRemoteImageSizes[ attachment.id ];
-							mediaSize = remoteImageSize || mediaSize;
-							imagesSize = imagesSize + ( remoteImageSize || mediaSize );
+							const requestedSize = mediaBlocks.find( ( block ) => block.clientId === associatedBlockClientId )?.attributes?.sizeSlug;
+							// Swap in the actual measured size of the target image, if available.
+							mediaSize = attachment.meta?.intermediate_image_filesizes?.[ requestedSize ] || mediaSize;
+							imagesSize = imagesSize + mediaSize;
 						} else {
 							videosSize = videosSize + mediaSize;
 						}

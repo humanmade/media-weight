@@ -102,7 +102,14 @@ const HMMediaWeightSidebar = () => {
 		}
 
 		const warningMsg = total >= mediaThreshold ? (
-			<p className="description">
+			<p className="description" style={
+				{
+					backgroundColor: '#1db231',
+					borderRadius: '2px',
+					color: '#fff',
+					padding: '3px 6px'
+				}
+			}>
 				{ sprintf(
 					/* translators: %f: Maximum allowed size (in megabytes) for all media on page. */
 					__( 'Warning! The media in this page exceeds the recommended threshold of %fmb', 'hm-media-weight' ),

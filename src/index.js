@@ -221,7 +221,7 @@ const HMMediaWeightSidebar = () => {
 									</p>
 									<p>
 										Attachment ID: { attachment.id }<br />
-										<small><a href={ attachment.link }>Go to the attachment post &rsaquo;</a></small>
+										<small><a href={ `upload.php?item=${ attachment.id }` }>Go to the attachment post &rsaquo;</a></small>
 									</p>
 									<details style={ { display: 'none', margin: '0.5rem 0 1rem' } }>
 										<summary>{ __( 'View entity record JSON', 'hm-media-weight' ) }</summary>

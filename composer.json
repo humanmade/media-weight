@@ -1,5 +1,5 @@
 {
-	"name": "humanmade/hm-media-weight",
+	"name": "humanmade/media-weight",
 	"description": "Block Editor plugin to monitor media bandwidth usage.",
 	"type": "wordpress-plugin",
 	"homepage": "https://humanmade.com",

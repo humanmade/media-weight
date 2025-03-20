@@ -1,6 +1,6 @@
 {
-	"name": "hm-media-weight",
-	"version": "0.1.0",
+	"name": "media-weight",
+	"private": true,
 	"description": "Block Editor plugin to monitor media bandwidth usage.",
 	"author": "Human Made Limited",
 	"license": "GPL-2.0-or-later",

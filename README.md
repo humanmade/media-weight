@@ -15,9 +15,9 @@ Ideally, it will eventually make accurate estimations of aggregate page size bas
 Download this plugin, activate it within WordPress, and run the Node build. In Altis, this can be done via the following commands (run them from a terminal in the project `content/plugins/` directory):
 
 ```
-git clone git@github.com:humanmade/hm-media-weight.git
-composer server cli -- plugin activate hm-media-weight
-cd hm-media-weight
+git clone git@github.com:humanmade/media-weight.git
+composer server cli -- plugin activate media-weight
+cd media-weight
 nvm use
 npm install
 npm run build

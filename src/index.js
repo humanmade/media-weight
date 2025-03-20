@@ -102,7 +102,14 @@ const HMMediaWeightSidebar = () => {
 		}
 
 		const warningMsg = total >= mediaThreshold ? (
-			<p className="description">
+			<p className="description" style={
+				{
+					backgroundColor: '#1db231',
+					borderRadius: '2px',
+					color: '#fff',
+					padding: '3px 6px'
+				}
+			}>
 				{ sprintf(
 					/* translators: %f: Maximum allowed size (in megabytes) for all media on page. */
 					__( 'Warning! The media in this page exceeds the recommended threshold of %fmb', 'hm-media-weight' ),
@@ -221,7 +228,7 @@ const HMMediaWeightSidebar = () => {
 									</p>
 									<p>
 										Attachment ID: { attachment.id }<br />
-										<small><a href={ attachment.link }>Go to the attachment post &rsaquo;</a></small>
+										<small><a href={ `upload.php?item=${ attachment.id }` }>Go to the attachment post &rsaquo;</a></small>
 									</p>
 									<details style={ { display: 'none', margin: '0.5rem 0 1rem' } }>
 										<summary>{ __( 'View entity record JSON', 'hm-media-weight' ) }</summary>

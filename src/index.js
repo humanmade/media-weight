@@ -5,6 +5,7 @@ import { PanelRow, PanelBody, Button, FlexItem, Flex } from '@wordpress/componen
 import { registerPlugin, unregisterPlugin } from '@wordpress/plugins';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { store as blockEditorStore } from '@wordpress/block-editor';
+import { store as editPostStore } from '@wordpress/edit-post';
 import { useEntityRecords } from '@wordpress/core-data';
 import { Icon, caution } from '@wordpress/icons';
 
@@ -86,6 +87,7 @@ const HMMediaWeightSidebar = () => {
 		videoCount
 	} = useMediaBlocks();
 	const { selectBlock } = useDispatch( blockEditorStore );
+	const { openGeneralSidebar } = useDispatch( editPostStore );
 	let imagesSize = 0;
 	let videosSize = 0;
 
@@ -152,7 +154,10 @@ const HMMediaWeightSidebar = () => {
 		const blockButton = attachment.id !== featuredImageId ? (
 			<Button
 				className="components-button is-compact is-secondary"
-				onClick={ () => selectBlock( associatedBlockClientId ) }
+				onClick={ () => {
+					selectBlock( associatedBlockClientId );
+					openGeneralSidebar( 'edit-post/block' );
+				} }
 			>
 				{ __( 'Select associated block', 'hm-media-weight' ) }
 			</Button> ) : '';

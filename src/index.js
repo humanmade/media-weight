@@ -263,7 +263,7 @@ const HMMediaWeightSidebar = () => {
 
 									{ requestedSize === 'full' && (
 										<>
-											<Flex direction="row" gap={ 6 }>
+											<Flex direction="row" align="flex-start" gap={ 6 }>
 												<FlexItem>
 													<Icon icon={ caution } size={ 36 } />
 												</FlexItem>

@@ -1,11 +1,13 @@
 import { useMemo } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { PluginSidebar, PluginSidebarMoreMenuItem } from '@wordpress/editor';
-import { PanelRow, PanelBody, Button } from '@wordpress/components';
+import { PanelRow, PanelBody, Button, FlexItem, Flex } from '@wordpress/components';
 import { registerPlugin, unregisterPlugin } from '@wordpress/plugins';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { store as blockEditorStore } from '@wordpress/block-editor';
+import { store as editPostStore } from '@wordpress/edit-post';
 import { useEntityRecords } from '@wordpress/core-data';
+import { Icon, caution } from '@wordpress/icons';
 
 import { ReactComponent as ScalesIcon } from './assets/scale-icon.svg';
 
@@ -85,11 +87,12 @@ const HMMediaWeightSidebar = () => {
 		videoCount
 	} = useMediaBlocks();
 	const { selectBlock } = useDispatch( blockEditorStore );
+	const { openGeneralSidebar } = useDispatch( editPostStore );
 	let imagesSize = 0;
 	let videosSize = 0;
 
 	// eslint-disable-next-line no-shadow
-	const DisplayTotal = ( { imagesSize, videosSize } ) => {
+	const DisplayTotal = ( { imageCount, imagesSize, videoCount, videosSize } ) => {
 		const total = ( ( imagesSize + videosSize ) / MB_IN_B ).toFixed( 2 );
 		let sizeColor;
 
@@ -135,8 +138,12 @@ const HMMediaWeightSidebar = () => {
 						</span>
 					</strong>
 				</p>
-				<p>{ __( 'Images total', 'hm-media-weight' ) }: { ( imagesSize / MB_IN_B ).toFixed( 2 ) }mb</p>
-				<p>{ __( 'Videos total', 'hm-media-weight' ) }: { ( videosSize / MB_IN_B ).toFixed( 2 ) }mb</p>
+				{ imageCount !== 0 && (
+					<p>{ __( 'Images total', 'hm-media-weight' ) }: { ( imagesSize / MB_IN_B ).toFixed( 2 ) }mb</p>
+				) }
+				{ videoCount !== 0 && (
+					<p>{ __( 'Videos total', 'hm-media-weight' ) }: { ( videosSize / MB_IN_B ).toFixed( 2 ) }mb</p>
+				) }
 				{ warningMsg }
 			</>
 		);
@@ -147,7 +154,10 @@ const HMMediaWeightSidebar = () => {
 		const blockButton = attachment.id !== featuredImageId ? (
 			<Button
 				className="components-button is-compact is-secondary"
-				onClick={ () => selectBlock( associatedBlockClientId ) }
+				onClick={ () => {
+					selectBlock( associatedBlockClientId );
+					openGeneralSidebar( 'edit-post/block' );
+				} }
 			>
 				{ __( 'Select associated block', 'hm-media-weight' ) }
 			</Button> ) : '';
@@ -158,8 +168,9 @@ const HMMediaWeightSidebar = () => {
 		}
 		let mediaSize = attachment.media_details.filesize;
 
+		let requestedSize = '';
 		if ( attachment.media_type === 'image' ) {
-			const requestedSize = attachment.id !== featuredImageId
+			requestedSize = attachment.id !== featuredImageId
 				? mediaBlocks.find( ( block ) => block.clientId === associatedBlockClientId )?.attributes?.sizeSlug
 				: ( featuredImageSize || 'full' );
 			// Swap in the actual measured size of the target image, if available.
@@ -178,7 +189,8 @@ const HMMediaWeightSidebar = () => {
 			thumbnail,
 			type,
 			mediaSize,
-			blockButton
+			blockButton,
+			requestedSize,
 		};
 	} );
 
@@ -192,11 +204,27 @@ const HMMediaWeightSidebar = () => {
 					initialOpen={ true }
 					title={ __( 'Total Media Items', 'hm-media-weight' ) }
 				>
-					<p>Images: { imageCount }</p>
-					<p>Videos: { videoCount }</p>
+					<p>{ imageCount
+						? sprintf(
+							/* translators: %d: Number of WP-hosted images in post. */
+							__( 'Images: %d', 'hm-media-weight' ),
+							imageCount
+						)
+						: __( 'No images', 'hm-media-weight' )
+					}</p>
+					<p>{ videoCount
+						? sprintf(
+							/* translators: %d: Number of WP-hosted videos in post. */
+							__( 'Videos: %d', 'hm-media-weight' ),
+							videoCount
+						)
+						: __( 'No videos', 'hm-media-weight' )
+					}</p>
 
 					<DisplayTotal
+						imageCount={ imageCount }
 						imagesSize={ imagesSize }
+						videoCount={ videoCount }
 						videosSize={ videosSize }
 					/>
 				</PanelBody>
@@ -205,7 +233,7 @@ const HMMediaWeightSidebar = () => {
 					initialOpen={ false }
 					title={ __( 'Individual Media Items', 'hm-media-weight' ) }
 				>
-					{ attachmentSizeDetails.map( ( { attachment, thumbnail, type, mediaSize, blockButton } ) => {
+					{ attachmentSizeDetails.map( ( { attachment, thumbnail, type, mediaSize, blockButton, requestedSize } ) => {
 
 						return (
 							<PanelRow key={ `media-details-${ attachment.id }` }>
@@ -217,6 +245,7 @@ const HMMediaWeightSidebar = () => {
 											style={ { maxWidth: '100%' } }
 										/>
 									) : null }
+
 									<p>
 										<strong>
 											{ type }: {
@@ -226,10 +255,25 @@ const HMMediaWeightSidebar = () => {
 											}
 										</strong>
 									</p>
+
 									<p>
 										Attachment ID: { attachment.id }<br />
 										<small><a href={ `upload.php?item=${ attachment.id }` }>Go to the attachment post &rsaquo;</a></small>
 									</p>
+
+									{ requestedSize === 'full' && (
+										<>
+											<Flex direction="row" align="flex-start" gap={ 6 }>
+												<FlexItem>
+													<Icon icon={ caution } size={ 36 } />
+												</FlexItem>
+												<FlexItem>
+													<p><strong>{ __( 'Full size image requested. Edit block to request smaller image.', 'hm-media-weight' ) }</strong></p>
+												</FlexItem>
+											</Flex>
+										</>
+									) }
+
 									<details style={ { display: 'none', margin: '0.5rem 0 1rem' } }>
 										<summary>{ __( 'View entity record JSON', 'hm-media-weight' ) }</summary>
 										<small>

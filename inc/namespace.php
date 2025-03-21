@@ -59,10 +59,20 @@ function schedule_file_size_check( $attachment_id ) {
 /**
  * Logs the file sizes for each image size of the uploaded attachment.
  *
+ * Image weights are retrieved via remote request against the image's URI.
+ *
  * @param int $attachment_id The ID of the uploaded attachment.
  */
 function store_intermediate_file_sizes( $attachment_id ) {
-	$image_sizes = get_intermediate_image_sizes();
+	/**
+	 * Filter which size slugs we retrieve image size information for.
+	 *
+	 * Enables a site from skipping computation (remote request) for any size
+	 * slugs that are explicitly not expected/allowed to be used in posts.
+	 *
+	 * @param string[] $calculated_image_sizes Maximum number of megabytes of media permitted per post.
+	 */
+	$image_sizes = apply_filters( 'hm_media_weight_calculated_sizes', get_intermediate_image_sizes() );
 	$file_sizes  = [];
 
 	foreach ( $image_sizes as $size ) {
@@ -72,15 +82,34 @@ function store_intermediate_file_sizes( $attachment_id ) {
 			continue;
 		}
 
-		$response = wp_remote_head( $image_url );
+		// Pass an Accept header to ensure we'll get webp sizing results if that
+		// format is supported by the server.
+		$args = [
+			'headers' => [ 'Accept' => 'image/webp' ],
+		];
+		$response = wp_remote_head( $image_url, $args );
 
 		if ( is_wp_error( $response ) ) {
 			continue;
 		}
 
 		$headers = wp_remote_retrieve_headers( $response );
-		if ( isset( $headers['content-length'] ) ) {
+		if ( ! empty( $headers['content-length'] ) ) {
 			$file_sizes[ $size ] = (int) $headers['content-length'];
+			continue;
+		}
+
+		// If head request didn't work, server may not expose response content-length.
+		// Instead, try a get and read the response string's length. This is obviously
+		// less efficient, but measures accurately.
+		$response = wp_remote_get( $image_url, $args );
+
+		if ( is_wp_error( $response ) ) {
+			continue;
+		}
+
+		if ( ( $response['response']['code'] ?? null ) === 200 && ! empty( $response['body'] ) ) {
+			$file_sizes[ $size ] = (int) strlen( $response['body'] );
 		}
 	}
 

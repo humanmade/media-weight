@@ -51,11 +51,13 @@ function register_block_plugin_editor_scripts() {
 			/**
 			 * Filter the threshold at which a post is deemed "too heavy" due to media weight.
 			 *
-			 * @param float $threshold Maxmimum number of megabytes of media permitted per post.
+			 * @param float $threshold Maximum number of megabytes of media permitted per post.
 			 */
 			'mediaThreshold' => apply_filters( 'hm_media_weight_threshold', 2.50 ),
 			/**
-			 * Filter the expected maximum width (in pixels) for a desktop featured image.
+			 * Filter the expected image size slug for a desktop featured image.
+			 *
+			 * @param string $size_slug String name of image size used for desktop featured image.
 			 */
 			'featuredImageSize' => apply_filters( 'hm_media_weight_featured_image_size_slug', 'large' ),
 		]

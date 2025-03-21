@@ -49,6 +49,25 @@ add_filter(
 );
 ```
 
+### `hm_media_weight_calculated_sizes`
+
+Allows a site to skip processing image sizes which are not expected to be used in post content. **Note** however that this can result in the full, uncompressed image size being shown as the expected post weight if a non-standard image crop is selected in the editor.
+
+The filter function receives one `string[]` argument: the `$calculated_image_sizes` list returned from `get_intermediate_image_sizes()`, which can be filtered as required by your specific application to restrict size checks to only certain image size slugs.
+
+Example:
+
+```php
+add_filter(
+	'hm_media_weight_calculated_sizes',
+	function( array $image_sizes ) : array {
+		// Our site will only ever use "large" or "hero-wide" images,
+		// skip calculating other sizes.
+		return [ 'large', 'article-16x9' ];
+	}
+);
+```
+
 ## Development
 
 Download this plugin, activate it within WordPress, and run the Node build. In Altis, this can be done via the following commands (run them from a terminal in the project `content/plugins/` directory):

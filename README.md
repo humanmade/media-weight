@@ -8,7 +8,7 @@ Currently, all this plugin does is to register a block editor plugin sidebar whi
 
 The sidebar will list the attachment's ID and type with its filesize in megabytes, the URI for the image, a `<details>` tab that can be expanded to view the attachment's entity record as formatted JSON, and a button to select and jump to that block in the editor.
 
-Ideally, it will eventually make accurate estimations of aggregate page size based on the associated media, and display a pre-publish or editor-banner warning when that size goes above a specific threshold.
+File size is calculated based on the retrieved image size (measured off HEAD request `content-length`, or the string length of a GET response body if the HEAD did not return a content length value) for the size of image which is selected in an image block. Image sizes are read off of actual remote image requests for PHP, which are dispatched from a cron job that gets scheduled as soon as an API request is made for a post which has image or video blocks.
 
 ## Development
 

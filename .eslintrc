@@ -1,5 +1,12 @@
 {
+	"root": true,
 	"extends": [ "plugin:@wordpress/eslint-plugin/recommended" ],
+	"parserOptions": {
+		"requireConfigFile": false,
+		"babelOptions": {
+			"presets": [ "@wordpress/babel-preset-default" ]
+		}
+	},
 	"env": {
 		"browser": true
 	},

@@ -59,10 +59,20 @@ function schedule_file_size_check( $attachment_id ) {
 /**
  * Logs the file sizes for each image size of the uploaded attachment.
  *
+ * Image weights are retrieved via remote request against the image's URI.
+ *
  * @param int $attachment_id The ID of the uploaded attachment.
  */
 function store_intermediate_file_sizes( $attachment_id ) {
-	$image_sizes = get_intermediate_image_sizes();
+	/**
+	 * Filter which size slugs we retrieve image size information for.
+	 *
+	 * Enables a site from skipping computation (remote request) for any size
+	 * slugs that are explicitly not expected/allowed to be used in posts.
+	 *
+	 * @param string[] $calculated_image_sizes Maximum number of megabytes of media permitted per post.
+	 */
+	$image_sizes = apply_filters( 'hm_media_weight_calculated_sizes', get_intermediate_image_sizes() );
 	$file_sizes  = [];
 
 	foreach ( $image_sizes as $size ) {

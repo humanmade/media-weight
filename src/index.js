@@ -89,7 +89,7 @@ const HMMediaWeightSidebar = () => {
 	let videosSize = 0;
 
 	// eslint-disable-next-line no-shadow
-	const DisplayTotal = ( { imagesSize, videosSize } ) => {
+	const DisplayTotal = ( { imageCount, imagesSize, videoCount, videosSize } ) => {
 		const total = ( ( imagesSize + videosSize ) / MB_IN_B ).toFixed( 2 );
 		let sizeColor;
 
@@ -135,8 +135,12 @@ const HMMediaWeightSidebar = () => {
 						</span>
 					</strong>
 				</p>
-				<p>{ __( 'Images total', 'hm-media-weight' ) }: { ( imagesSize / MB_IN_B ).toFixed( 2 ) }mb</p>
-				<p>{ __( 'Videos total', 'hm-media-weight' ) }: { ( videosSize / MB_IN_B ).toFixed( 2 ) }mb</p>
+				{ imageCount !== 0 && (
+					<p>{ __( 'Images total', 'hm-media-weight' ) }: { ( imagesSize / MB_IN_B ).toFixed( 2 ) }mb</p>
+				) }
+				{ videoCount !== 0 && (
+					<p>{ __( 'Videos total', 'hm-media-weight' ) }: { ( videosSize / MB_IN_B ).toFixed( 2 ) }mb</p>
+				) }
 				{ warningMsg }
 			</>
 		);
@@ -196,7 +200,9 @@ const HMMediaWeightSidebar = () => {
 					<p>Videos: { videoCount }</p>
 
 					<DisplayTotal
+						imageCount={ imageCount }
 						imagesSize={ imagesSize }
+						videoCount={ videoCount }
 						videosSize={ videosSize }
 					/>
 				</PanelBody>

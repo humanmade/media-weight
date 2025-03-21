@@ -51,7 +51,7 @@ function register_block_plugin_editor_scripts() {
 			/**
 			 * Filter the threshold at which a post is deemed "too heavy" due to media weight.
 			 *
-			 * @param float $threshold Maxmimum number of megabytes of media permitted per post.
+			 * @param float $threshold Maximum number of megabytes of media permitted per post.
 			 */
 			'mediaThreshold' => apply_filters( 'hm_media_weight_threshold', 2.50 ),
 			/**

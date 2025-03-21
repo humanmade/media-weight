@@ -10,6 +10,20 @@ The sidebar will list the attachment's ID and type with its filesize in megabyte
 
 File size is calculated based on the retrieved image size (measured off HEAD request `content-length`, or the string length of a GET response body if the HEAD did not return a content length value) for the size of image which is selected in an image block. Image sizes are read off of actual remote image requests for PHP, which are dispatched from a cron job that gets scheduled as soon as an API request is made for a post which has image or video blocks.
 
+## Hooks
+
+### `hm_media_weight_threshold`
+
+Sets the threshold at which a post is deemed "too heavy" due to media weight.
+
+Filter function will receive one `float` argument: the `$threshold`, or maximum number of megabytes of media permitted per post.
+
+### `hm_media_weight_featured_image_size_slug`
+
+Determines the expected image size slug for a desktop featured image.
+
+The filter function receives one `string` argument: the `$size_slug`, defining the string name of the image size which is expected to be used for a desktop featured image.
+
 ## Development
 
 Download this plugin, activate it within WordPress, and run the Node build. In Altis, this can be done via the following commands (run them from a terminal in the project `content/plugins/` directory):

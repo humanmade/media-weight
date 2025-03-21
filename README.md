@@ -18,11 +18,36 @@ Sets the threshold at which a post is deemed "too heavy" due to media weight.
 
 Filter function will receive one `float` argument: the `$threshold`, or maximum number of megabytes of media permitted per post.
 
+Example:
+
+```php
+add_filter(
+	'hm_media_weight_threshold',
+	function( float $threshold ) {
+		// We want to be very aggressive about image weight,
+		// warn if more than 500kb of media on a post.
+		return 0.5;
+	}
+);
+```
+
 ### `hm_media_weight_featured_image_size_slug`
 
 Determines the expected image size slug for a desktop featured image.
 
 The filter function receives one `string` argument: the `$size_slug`, defining the string name of the image size which is expected to be used for a desktop featured image.
+
+Example:
+
+```php
+add_filter(
+	'hm_media_weight_featured_image_size_slug',
+	function( string $size_slug ) : string {
+		// Our classic theme uses this size image in its single.php template.
+		return 'article-16x9';
+	}
+);
+```
 
 ## Development
 

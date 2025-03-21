@@ -8,7 +8,65 @@ Currently, all this plugin does is to register a block editor plugin sidebar whi
 
 The sidebar will list the attachment's ID and type with its filesize in megabytes, the URI for the image, a `<details>` tab that can be expanded to view the attachment's entity record as formatted JSON, and a button to select and jump to that block in the editor.
 
-Ideally, it will eventually make accurate estimations of aggregate page size based on the associated media, and display a pre-publish or editor-banner warning when that size goes above a specific threshold.
+File size is calculated based on the retrieved image size (measured off HEAD request `content-length`, or the string length of a GET response body if the HEAD did not return a content length value) for the size of image which is selected in an image block. Image sizes are read off of actual remote image requests for PHP, which are dispatched from a cron job that gets scheduled as soon as an API request is made for a post which has image or video blocks.
+
+## Hooks
+
+### `hm_media_weight_threshold`
+
+Sets the threshold at which a post is deemed "too heavy" due to media weight.
+
+Filter function will receive one `float` argument: the `$threshold`, or maximum number of megabytes of media permitted per post.
+
+Example:
+
+```php
+add_filter(
+	'hm_media_weight_threshold',
+	function( float $threshold ) {
+		// We want to be very aggressive about image weight,
+		// warn if more than 500kb of media on a post.
+		return 0.5;
+	}
+);
+```
+
+### `hm_media_weight_featured_image_size_slug`
+
+Determines the expected image size slug for a desktop featured image.
+
+The filter function receives one `string` argument: the `$size_slug`, defining the string name of the image size which is expected to be used for a desktop featured image.
+
+Example:
+
+```php
+add_filter(
+	'hm_media_weight_featured_image_size_slug',
+	function( string $size_slug ) : string {
+		// Our classic theme uses this size image in its single.php template.
+		return 'article-16x9';
+	}
+);
+```
+
+### `hm_media_weight_calculated_sizes`
+
+Allows a site to skip processing image sizes which are not expected to be used in post content. **Note** however that this can result in the full, uncompressed image size being shown as the expected post weight if a non-standard image crop is selected in the editor.
+
+The filter function receives one `string[]` argument: the `$calculated_image_sizes` list returned from `get_intermediate_image_sizes()`, which can be filtered as required by your specific application to restrict size checks to only certain image size slugs.
+
+Example:
+
+```php
+add_filter(
+	'hm_media_weight_calculated_sizes',
+	function( array $image_sizes ) : array {
+		// Our site will only ever use "large" or "hero-wide" images,
+		// skip calculating other sizes.
+		return [ 'large', 'article-16x9' ];
+	}
+);
+```
 
 ## Development
 

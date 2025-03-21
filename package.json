@@ -15,9 +15,9 @@
 		"start": "wp-scripts start --hot"
 	},
 	"devDependencies": {
-		"@wordpress/scripts": "^30.9.0"
+		"@wordpress/scripts": "^30.13.0"
 	},
 	"dependencies": {
-		"@wordpress/icons": "^10.16.0"
+		"@wordpress/icons": "^10.20.0"
 	}
 }

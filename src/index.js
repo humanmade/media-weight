@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { PluginSidebar, PluginSidebarMoreMenuItem } from '@wordpress/editor';
+import { PluginSidebar } from '@wordpress/editor';
 import { PanelRow, PanelBody, Button, FlexItem, Flex } from '@wordpress/components';
 import { registerPlugin, unregisterPlugin } from '@wordpress/plugins';
 import { useDispatch, useSelect } from '@wordpress/data';
@@ -195,103 +195,98 @@ const HMMediaWeightSidebar = () => {
 	} );
 
 	return (
-		<>
-			<PluginSidebarMoreMenuItem target={ SIDEBAR_NAME }>
-				{ __( 'Media Weight sidebar', 'hm-media-weight' ) }
-			</PluginSidebarMoreMenuItem>
-			<PluginSidebar className={ SIDEBAR_NAME } name={ SIDEBAR_NAME } title={ __( 'Media Weight', 'hm-media-weight' ) }>
-				<PanelBody
-					initialOpen={ true }
-					title={ __( 'Total Media Items', 'hm-media-weight' ) }
-				>
-					<p>{ imageCount
-						? sprintf(
-							/* translators: %d: Number of WP-hosted images in post. */
-							__( 'Images: %d', 'hm-media-weight' ),
-							imageCount
-						)
-						: __( 'No images', 'hm-media-weight' )
-					}</p>
-					<p>{ videoCount
-						? sprintf(
-							/* translators: %d: Number of WP-hosted videos in post. */
-							__( 'Videos: %d', 'hm-media-weight' ),
-							videoCount
-						)
-						: __( 'No videos', 'hm-media-weight' )
-					}</p>
+		<PluginSidebar className={ SIDEBAR_NAME } title={ __( 'Media Weight', 'hm-media-weight' ) }>
+			<PanelBody
+				initialOpen={ true }
+				title={ __( 'Total Media Items', 'hm-media-weight' ) }
+			>
+				<p>{ imageCount
+					? sprintf(
+						/* translators: %d: Number of WP-hosted images in post. */
+						__( 'Images: %d', 'hm-media-weight' ),
+						imageCount
+					)
+					: __( 'No images', 'hm-media-weight' )
+				}</p>
+				<p>{ videoCount
+					? sprintf(
+						/* translators: %d: Number of WP-hosted videos in post. */
+						__( 'Videos: %d', 'hm-media-weight' ),
+						videoCount
+					)
+					: __( 'No videos', 'hm-media-weight' )
+				}</p>
 
-					<DisplayTotal
-						imageCount={ imageCount }
-						imagesSize={ imagesSize }
-						videoCount={ videoCount }
-						videosSize={ videosSize }
-					/>
-				</PanelBody>
+				<DisplayTotal
+					imageCount={ imageCount }
+					imagesSize={ imagesSize }
+					videoCount={ videoCount }
+					videosSize={ videosSize }
+				/>
+			</PanelBody>
 
-				<PanelBody
-					initialOpen={ false }
-					title={ __( 'Individual Media Items', 'hm-media-weight' ) }
-				>
-					{ attachmentSizeDetails.map( ( { attachment, thumbnail, type, mediaSize, blockButton, requestedSize } ) => {
+			<PanelBody
+				initialOpen={ false }
+				title={ __( 'Individual Media Items', 'hm-media-weight' ) }
+			>
+				{ attachmentSizeDetails.map( ( { attachment, thumbnail, type, mediaSize, blockButton, requestedSize } ) => {
 
-						return (
-							<PanelRow key={ `media-details-${ attachment.id }` }>
-								<div>
-									{ thumbnail ? (
-										<img
-											src={ thumbnail }
-											alt=""
-											style={ { maxWidth: '100%' } }
-										/>
-									) : null }
+					return (
+						<PanelRow key={ `media-details-${ attachment.id }` }>
+							<div>
+								{ thumbnail ? (
+									<img
+										src={ thumbnail }
+										alt=""
+										style={ { maxWidth: '100%' } }
+									/>
+								) : null }
 
-									<p>
-										<strong>
-											{ type }: {
-												( mediaSize < MB_IN_B )
-													? `${ ( mediaSize / KB_IN_B ).toFixed( 2 ) }kb`
-													: `${ ( mediaSize / MB_IN_B ).toFixed( 2 ) }mb`
-											}
-										</strong>
-									</p>
+								<p>
+									<strong>
+										{ type }: {
+											( mediaSize < MB_IN_B )
+												? `${ ( mediaSize / KB_IN_B ).toFixed( 2 ) }kb`
+												: `${ ( mediaSize / MB_IN_B ).toFixed( 2 ) }mb`
+										}
+									</strong>
+								</p>
 
-									<p>
-										Attachment ID: { attachment.id }<br />
-										<small><a href={ `upload.php?item=${ attachment.id }` }>Go to the attachment post &rsaquo;</a></small>
-									</p>
+								<p>
+									Attachment ID: { attachment.id }<br />
+									<small><a href={ `upload.php?item=${ attachment.id }` }>Go to the attachment post &rsaquo;</a></small>
+								</p>
 
-									{ requestedSize === 'full' && (
-										<>
-											<Flex direction="row" align="flex-start" gap={ 6 }>
-												<FlexItem>
-													<Icon icon={ caution } size={ 36 } />
-												</FlexItem>
-												<FlexItem>
-													<p><strong>{ __( 'Full size image requested. Edit block to request smaller image.', 'hm-media-weight' ) }</strong></p>
-												</FlexItem>
-											</Flex>
-										</>
-									) }
+								{ requestedSize === 'full' && (
+									<>
+										<Flex direction="row" align="flex-start" gap={ 6 }>
+											<FlexItem>
+												<Icon icon={ caution } size={ 36 } />
+											</FlexItem>
+											<FlexItem>
+												<p><strong>{ __( 'Full size image requested. Edit block to request smaller image.', 'hm-media-weight' ) }</strong></p>
+											</FlexItem>
+										</Flex>
+									</>
+								) }
 
-									<details style={ { display: 'none', margin: '0.5rem 0 1rem' } }>
-										<summary>{ __( 'View entity record JSON', 'hm-media-weight' ) }</summary>
-										<small>
-											<pre>
-												{ JSON.stringify( attachment, null, 2 ) }
-											</pre>
-										</small>
-									</details>
+								<details style={ { display: 'none', margin: '0.5rem 0 1rem' } }>
+									<summary>{ __( 'View entity record JSON', 'hm-media-weight' ) }</summary>
+									<small>
+										<pre>
+											{ JSON.stringify( attachment, null, 2 ) }
+										</pre>
+									</small>
+								</details>
 
-									{ blockButton }
-									<hr />
-								</div>
-							</PanelRow>
-						);
-					} ) }
-				</PanelBody>
-			</PluginSidebar>
-		</>
+								{ blockButton }
+								<hr />
+							</div>
+						</PanelRow>
+					);
+				} ) }
+			</PanelBody>
+		</PluginSidebar>
 	);
 };
 

@@ -4,6 +4,7 @@ import { PluginSidebar } from '@wordpress/editor';
 import { PanelRow, PanelBody, Button, FlexItem, Flex } from '@wordpress/components';
 import { registerPlugin, unregisterPlugin } from '@wordpress/plugins';
 import { useDispatch, useSelect } from '@wordpress/data';
+import { useEffect } from '@wordpress/element';
 import { store as blockEditorStore } from '@wordpress/block-editor';
 import { store as editPostStore } from '@wordpress/edit-post';
 import { useEntityRecords } from '@wordpress/core-data';
@@ -11,7 +12,7 @@ import { Icon, caution } from '@wordpress/icons';
 
 import { ReactComponent as ScalesIcon } from './assets/scale-icon.svg';
 
-const { mediaThreshold, featuredImageSize } = window.mediaWeightData;
+const { mediaThreshold, featuredImageSize, previewPostLink } = window.mediaWeightData;
 
 const PLUGIN_NAME = 'hm-media-weight';
 const SIDEBAR_NAME = PLUGIN_NAME;
@@ -194,8 +195,60 @@ const HMMediaWeightSidebar = () => {
 		};
 	} );
 
+	const insertIframe = ( url, width = '1600px', height = '800px' ) => {
+		const iframeExists = document.getElementById( 'post-preview-iframe' );
+
+		if ( ! iframeExists ) {
+			const iframe = document.createElement( 'iframe' );
+			iframe.src = url;
+			iframe.width = width;
+			iframe.height = height;
+			iframe.id = 'post-preview-iframe';
+			iframe.style.display = 'none';
+			document.body.appendChild( iframe );
+		}
+	}
+
+	const addQueryString = ( url, params ) => {
+		const urlObject = new URL( url );
+		const searchParams = new URLSearchParams( urlObject.search );
+
+		for ( const key in params ) {
+			if ( params.hasOwnProperty( key ) ) {
+				searchParams.set( key, params[key] );
+			}
+		}
+
+		urlObject.search = searchParams.toString();
+
+		return urlObject.toString();
+	}
+
+	const newParams = {
+		mediaWeight: '1'
+	};
+	const iframeURL = addQueryString( previewPostLink, newParams );
+
+	useEffect( () => {
+		window.addEventListener( 'message', ( event ) => {
+			const receivedEntries = event.data;
+			console.log( receivedEntries );
+		} );
+	}, [ iframeURL ] );
+
 	return (
 		<PluginSidebar className={ SIDEBAR_NAME } title={ __( 'Media Weight', 'hm-media-weight' ) }>
+			<PanelBody>
+				<Button
+					className="components-button is-compact is-secondary"
+					onClick={ () => {
+						insertIframe( iframeURL );
+					} }
+				>
+					{ __( 'Get Performance API Entries', 'hm-media-weight' ) }
+				</Button>
+			</PanelBody>
+
 			<PanelBody
 				initialOpen={ true }
 				title={ __( 'Total Media Items', 'hm-media-weight' ) }

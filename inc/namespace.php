@@ -16,6 +16,7 @@ function bootstrap() : void {
 	add_action( 'add_attachment', __NAMESPACE__ . '\\schedule_file_size_check' );
 	add_action( ATTACHMENT_SIZE_CRON_ID, __NAMESPACE__ . '\\store_intermediate_file_sizes' );
 	add_action( 'rest_prepare_attachment', __NAMESPACE__ . '\\lookup_file_sizes_as_needed_during_rest_response', 10, 3 );
+	add_action( 'wp_head', __NAMESPACE__ . '\\get_performance_entries' );
 }
 
 /**
@@ -163,4 +164,26 @@ function lookup_file_sizes_as_needed_during_rest_response( $response, $post, $re
 	}
 
 	return $response;
+}
+
+/**
+ * Prints script to the head tag for passing PerformanceEntry
+ * objects to the postMessage method when adding an iframe.
+ *
+ * @return void
+ */
+function get_performance_entries() {
+	// Bail if mediaWeight URL param is not set.
+	if ( ! isset( $_GET['mediaWeight'] ) ) {
+		return;
+	}
+
+	?>
+	<script>
+		const entries = window.performance.getEntriesByType( 'resource' );
+		window.addEventListener( 'load', () => {
+			window.parent.postMessage( JSON.stringify( entries ) );
+		} );
+	</script>
+	<?php
 }

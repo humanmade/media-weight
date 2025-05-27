@@ -232,6 +232,7 @@ const HMMediaWeightSidebar = () => {
 	useEffect( () => {
 		window.addEventListener( 'message', ( event ) => {
 			const receivedEntries = event.data;
+			// eslint-disable-next-line no-console
 			console.log( receivedEntries );
 		} );
 	}, [ iframeURL ] );

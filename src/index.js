@@ -9,10 +9,11 @@ import { store as blockEditorStore } from '@wordpress/block-editor';
 import { store as editPostStore } from '@wordpress/edit-post';
 import { useEntityRecords } from '@wordpress/core-data';
 import { Icon, caution } from '@wordpress/icons';
+import { addQueryArgs } from '@wordpress/url';
 
 import { ReactComponent as ScalesIcon } from './assets/scale-icon.svg';
 
-const { mediaThreshold, featuredImageSize, previewPostLink } = window.mediaWeightData;
+const { mediaThreshold, featuredImageSize } = window.mediaWeightData;
 
 const PLUGIN_NAME = 'hm-media-weight';
 const SIDEBAR_NAME = PLUGIN_NAME;
@@ -196,9 +197,12 @@ const HMMediaWeightSidebar = () => {
 	} );
 
 	const insertIframe = ( url, width = '1600px', height = '800px' ) => {
-		const iframeExists = document.getElementById( 'post-preview-iframe' );
+		const iframeWindow = document.getElementById( 'post-preview-iframe' );
 
-		if ( ! iframeExists ) {
+		if ( iframeWindow ) {
+			// Reload the iframe to recalculate performance entries.
+			iframeWindow.contentWindow.location.reload();
+		} else {
 			const iframe = document.createElement( 'iframe' );
 			iframe.src = url;
 			iframe.width = width;
@@ -209,33 +213,21 @@ const HMMediaWeightSidebar = () => {
 		}
 	}
 
-	const addQueryString = ( url, params ) => {
-		const urlObject = new URL( url );
-		const searchParams = new URLSearchParams( urlObject.search );
-
-		for ( const key in params ) {
-			if ( params.hasOwnProperty( key ) ) {
-				searchParams.set( key, params[key] );
-			}
-		}
-
-		urlObject.search = searchParams.toString();
-
-		return urlObject.toString();
-	}
-
-	const newParams = {
-		mediaWeight: '1'
-	};
-	const iframeURL = addQueryString( previewPostLink, newParams );
+	const previewPostLink = useSelect( ( select ) => select( 'core/editor' ).getEditedPostPreviewLink() );
+	const iframeURL = addQueryArgs( previewPostLink, { mediaWeight: '1' } );
 
 	useEffect( () => {
-		window.addEventListener( 'message', ( event ) => {
+		const listener = window.addEventListener( 'message', ( event ) => {
 			const receivedEntries = event.data;
 			// eslint-disable-next-line no-console
 			console.log( receivedEntries );
+			// You can call a useState callback here to get the data into the component.
 		} );
-	}, [ iframeURL ] );
+
+		return () => {
+			window.removeEventListener( listener );
+		};
+	}, [] );
 
 	return (
 		<PluginSidebar className={ SIDEBAR_NAME } title={ __( 'Media Weight', 'hm-media-weight' ) }>

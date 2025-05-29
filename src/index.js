@@ -219,7 +219,7 @@ const HMMediaWeightSidebar = () => {
 	useEffect( () => {
 		const listener = ( event ) => {
 			let receivedEntries = event.data;
-			let mediaEntries = {};
+			const mediaEntries = {};
 
 			receivedEntries = JSON.parse( receivedEntries );
 

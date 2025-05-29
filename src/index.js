@@ -4,10 +4,12 @@ import { PluginSidebar } from '@wordpress/editor';
 import { PanelRow, PanelBody, Button, FlexItem, Flex } from '@wordpress/components';
 import { registerPlugin, unregisterPlugin } from '@wordpress/plugins';
 import { useDispatch, useSelect } from '@wordpress/data';
+import { useEffect } from '@wordpress/element';
 import { store as blockEditorStore } from '@wordpress/block-editor';
 import { store as editPostStore } from '@wordpress/edit-post';
 import { useEntityRecords } from '@wordpress/core-data';
 import { Icon, caution } from '@wordpress/icons';
+import { addQueryArgs } from '@wordpress/url';
 
 import { ReactComponent as ScalesIcon } from './assets/scale-icon.svg';
 
@@ -194,8 +196,81 @@ const HMMediaWeightSidebar = () => {
 		};
 	} );
 
+	const insertIframe = ( url, width = '1600px', height = '800px' ) => {
+		const iframeWindow = document.getElementById( 'post-preview-iframe' );
+
+		if ( iframeWindow ) {
+			// Reload the iframe to recalculate performance entries.
+			iframeWindow.contentWindow.location.reload();
+		} else {
+			const iframe = document.createElement( 'iframe' );
+			iframe.src = url;
+			iframe.width = width;
+			iframe.height = height;
+			iframe.id = 'post-preview-iframe';
+			iframe.style.display = 'none';
+			document.body.appendChild( iframe );
+		}
+	}
+
+	const previewPostLink = useSelect( ( select ) => select( 'core/editor' ).getEditedPostPreviewLink() );
+	const iframeURL = addQueryArgs( previewPostLink, { mediaWeight: '1' } );
+
+	useEffect( () => {
+		const listener = ( event ) => {
+			let receivedEntries = event.data;
+			const mediaEntries = {};
+
+			receivedEntries = JSON.parse( receivedEntries );
+
+			// Select only images and videos.
+			const filteredEntries = receivedEntries.filter( ( entry ) => {
+				return entry.initiatorType === 'img' || entry.initiatorType === 'video';
+			} );
+
+			filteredEntries.forEach( ( entry, index ) => {
+				let mediaID;
+
+				for ( const attachment of attachments ) {
+					if ( ! entry.name.includes( attachment.generated_slug ) ) {
+						continue;
+					}
+
+					mediaID = attachment.id;
+				};
+
+				mediaEntries[index] = {
+					mediaID: mediaID ? mediaID : null,
+					mediaSize: entry.encodedBodySize,
+					mediaType: entry.initiatorType,
+					mediaURL: entry.name,
+				};
+			} );
+
+			// eslint-disable-next-line no-console
+			console.log( mediaEntries );
+		}
+
+		window.addEventListener( 'message', listener );
+
+		return () => {
+			window.removeEventListener( 'message', listener );
+		};
+	}, [ attachments ] );
+
 	return (
 		<PluginSidebar className={ SIDEBAR_NAME } title={ __( 'Media Weight', 'hm-media-weight' ) }>
+			<PanelBody>
+				<Button
+					className="components-button is-compact is-secondary"
+					onClick={ () => {
+						insertIframe( iframeURL );
+					} }
+				>
+					{ __( 'Get Performance API Entries', 'hm-media-weight' ) }
+				</Button>
+			</PanelBody>
+
 			<PanelBody
 				initialOpen={ true }
 				title={ __( 'Total Media Items', 'hm-media-weight' ) }

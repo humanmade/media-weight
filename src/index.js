@@ -217,17 +217,46 @@ const HMMediaWeightSidebar = () => {
 	const iframeURL = addQueryArgs( previewPostLink, { mediaWeight: '1' } );
 
 	useEffect( () => {
-		const listener = window.addEventListener( 'message', ( event ) => {
-			const receivedEntries = event.data;
+		const listener = ( event ) => {
+			let receivedEntries = event.data;
+			let mediaEntries = {};
+
+			receivedEntries = JSON.parse( receivedEntries );
+
+			// Select only images and videos.
+			const filteredEntries = receivedEntries.filter( ( entry ) => {
+				return entry.initiatorType === 'img' || entry.initiatorType === 'video';
+			} );
+
+			filteredEntries.forEach( ( entry, index ) => {
+				let mediaID;
+
+				for ( const attachment of attachments ) {
+					if ( ! entry.name.includes( attachment.generated_slug ) ) {
+						continue;
+					}
+
+					mediaID = attachment.id;
+				};
+
+				mediaEntries[index] = {
+					mediaID: mediaID ? mediaID : null,
+					mediaSize: entry.encodedBodySize,
+					mediaType: entry.initiatorType,
+					mediaURL: entry.name,
+				};
+			} );
+
 			// eslint-disable-next-line no-console
-			console.log( receivedEntries );
-			// You can call a useState callback here to get the data into the component.
-		} );
+			console.log( mediaEntries );
+		}
+
+		window.addEventListener( 'message', listener );
 
 		return () => {
-			window.removeEventListener( listener );
+			window.removeEventListener( 'message', listener );
 		};
-	}, [] );
+	}, [ attachments ] );
 
 	return (
 		<PluginSidebar className={ SIDEBAR_NAME } title={ __( 'Media Weight', 'hm-media-weight' ) }>

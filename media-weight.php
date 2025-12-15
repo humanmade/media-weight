@@ -21,3 +21,4 @@ require_once __DIR__ . '/inc/assets.php';
 
 bootstrap();
 Assets\bootstrap();
+

@@ -46,7 +46,7 @@ const previewPlatforms = {
 	},
 };
 
-// Animated skeleton loading placeholder with shimmer effect.
+// Animated skeleton loading placeholder with shimmer effect. @keyframes shimmer added to admin footer separately.
 const SkeletonBox = ( { width = '100%', height = '16px', style = {} } ) => (
 	<div
 		aria-hidden="true"
@@ -182,6 +182,9 @@ const HMMediaWeightSidebar = () => {
 		}
 		setPreviewEntries( [] );
 		insertPreviewIframe( iframeURL, previewPlatform );
+		return () => {
+			removePreviewIframe();
+		};
 	}, [ iframeURL, insertPreviewIframe, previewPlatform ] );
 
 	// Listens for postMessage from the preview iframe containing Performance API resource data.

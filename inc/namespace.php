@@ -71,15 +71,14 @@ function output_resource_tracking_on_preview() {
 	function filterEntriesToContent( entries ) {
 		const articleMainSection = document.querySelector( '.article-main-section' );
 		const avatarBylines      = document.querySelector( '.post-single__bylines' );
-
 		if ( articleMainSection ) {
 			entries = entries.filter( ( entry ) => {
 				// Look for an image with the srcset containing the entity name.
-				const element  = document.querySelector( `img[srcset*="${ esc_attr( entry.name ) }"]` );
+				const element  = document.querySelector( `img[srcset*="${ entry.name }"]` );
 				const hasImage = articleMainSection.contains( element ) && ( ! avatarBylines || ! avatarBylines.contains( element ) );
 
 				// Look for videos with the src containing the entity name.
-				const videoElement = document.querySelector( `video[src*="${ esc_attr( entry.name ) }"]` );
+				const videoElement = document.querySelector( `video[src*="${ entry.name }"]` );
 				const hasVideo     = articleMainSection.contains( videoElement );
 
 				return hasImage || hasVideo;

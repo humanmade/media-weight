@@ -36,7 +36,6 @@ function output_resource_tracking_on_preview() {
 	if ( ! isset( $_GET['mediaWeight'] ) ) {
 		return;
 	}
-
 ?>
 <script>
 	// Collect all resource information once the page is fully loaded.
@@ -121,7 +120,6 @@ function disable_lazy_loading_for_iframes_in_preview( $lazy ) {
  */
 function output_shimmer_styles() : void {
 	?>
-
 	<style>
 		/* Shimmer effect for loading */
 		@keyframes shimmer {

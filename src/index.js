@@ -316,15 +316,12 @@ const HMMediaWeightSidebar = () => {
 					{ /* Total Media Weight Section */ }
 					{ /* Loading Skeleton */ }
 					{ isFetchingPreview && <MediaWeightSkeleton /> }
-
-					{ /* Total Media Weight Section
-					The label will read "Mobile media weight" or "Desktop media weight" depending on the selected platform. */ }
+					{ /* Total Media Weight Section */ }
 					{ ! isFetchingPreview && (
 						<div>
 							<p style={ { fontWeight: 600, marginBottom: '8px' } }>
 								{ mediaWeightHeader }
 							</p>
-							{ /* Status badge */ }
 							{ previewEntries.length > 0 ? (
 								<Flex
 									gap={ 2 }
@@ -365,7 +362,6 @@ const HMMediaWeightSidebar = () => {
 							) }
 						</div>
 					) }
-
 					{ /* Media Breakdown Section */ }
 					{ ! isFetchingPreview && previewEntries.length > 0 && (
 						<Flex direction="column" gap={ 2 }>
@@ -399,7 +395,6 @@ const HMMediaWeightSidebar = () => {
 							</Flex>
 						</Flex>
 					) }
-
 					{ /* Warning Notice */ }
 					{ ! isFetchingPreview && sizeStatus === 'error' && (
 						<Notice
@@ -413,7 +408,6 @@ const HMMediaWeightSidebar = () => {
 							) }
 						</Notice>
 					) }
-
 					{ /* Warning for approaching limit */ }
 					{ ! isFetchingPreview && sizeStatus === 'warning' && (
 						<Notice
@@ -427,7 +421,6 @@ const HMMediaWeightSidebar = () => {
 							) }
 						</Notice>
 					) }
-
 					{ /* Platform Selection */ }
 					<SelectControl
 						label={ __( 'Preview platform', 'hm-media-weight' ) }
@@ -441,7 +434,6 @@ const HMMediaWeightSidebar = () => {
 						) }
 						__nextHasNoMarginBottom
 					/>
-
 					{ /* Refresh Button */ }
 					<Button
 						variant="secondary"

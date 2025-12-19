@@ -1,3 +1,6 @@
+/**
+ * WordPress editor plugin for calculating and displaying page media weight.
+ */
 import { useMemo, useState, useCallback } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { PluginSidebar } from '@wordpress/editor';
@@ -19,12 +22,17 @@ import { addQueryArgs } from '@wordpress/url';
 
 import { ReactComponent as ScalesIcon } from './assets/scale-icon.svg';
 
+// Media size threshold (in MB) from server configuration.
 const { mediaThreshold } = window.mediaWeightData;
 
+// Plugin and sidebar identifiers.
 const PLUGIN_NAME = 'hm-media-weight';
 const SIDEBAR_NAME = PLUGIN_NAME;
+
+// Bytes per megabyte conversion constant.
 const MB_IN_B = 1024 * 1024;
 
+// Viewport configurations for mobile and desktop preview modes.
 const previewPlatforms = {
 	mobile: {
 		label: __( 'Mobile', 'hm-media-weight' ),
@@ -40,7 +48,7 @@ const previewPlatforms = {
 	},
 };
 
-// Skeleton loading placeholder component.
+// Animated skeleton loading placeholder with shimmer effect.
 const SkeletonBox = ( { width = '100%', height = '16px', style = {} } ) => (
 	<div
 		aria-hidden="true"
@@ -57,6 +65,7 @@ const SkeletonBox = ( { width = '100%', height = '16px', style = {} } ) => (
 	/>
 );
 
+// Recursively extracts image and video blocks from the editor block tree.
 const getMediaBlocks = ( blocks ) => blocks.reduce(
 	( mediaBlocks, block ) => {
 		if ( [ 'core/image', 'core/video' ].includes( block.name ) ) {
@@ -70,6 +79,7 @@ const getMediaBlocks = ( blocks ) => blocks.reduce(
 	[]
 );
 
+// Custom hook that retrieves media block IDs and fetches their attachment records.
 const useMediaBlocks = () => {
 	const mediaBlocks = useSelect( ( select ) => getMediaBlocks( select( blockEditorStore ).getBlocks() ) );
 	const featuredImageId = useSelect( ( select ) => select( 'core/editor' ).getEditedPostAttribute( 'featured_media' ) );
@@ -109,6 +119,7 @@ const useMediaBlocks = () => {
 	};
 };
 
+// Main sidebar component that displays media weight calculations and status.
 const HMMediaWeightSidebar = () => {
 	const {
 		attachments,
@@ -132,7 +143,7 @@ const HMMediaWeightSidebar = () => {
 			previewPlatforms[ previewPlatform ].label
 		);
 
-	// Skeleton loader to mimic the loaded state layout.
+	// Skeleton loader component that mimics the loaded state layout.
 	const MediaWeightSkeleton = () => (
 		<Flex direction="column" gap={ 4 } aria-label={ __( 'Loading media weight data…', 'hm-media-weight' ) }>
 			<div>
@@ -182,6 +193,7 @@ const HMMediaWeightSidebar = () => {
 		);
 	}, [ previewPostLink, previewPlatform ] );
 
+	// Removes the preview iframe from the DOM.
 	const removePreviewIframe = () => {
 		const iframeToRemove = document.getElementById( 'post-preview-iframe' );
 		if ( iframeToRemove ) {
@@ -189,6 +201,7 @@ const HMMediaWeightSidebar = () => {
 		}
 	};
 
+	// Creates and inserts a hidden iframe to load the post preview at the specified viewport size.
 	const insertPreviewIframe = useCallback( ( url, platform = 'mobile' ) => {
 		const { width, height } = previewPlatforms[ platform ];
 		setIsFetchingPreview( true );
@@ -221,37 +234,13 @@ const HMMediaWeightSidebar = () => {
 		document.body.appendChild( iframe );
 	}, [] );
 
+	// Refresh the preview iframe when URL or platform changes.
 	useEffect( () => {
-		if ( ! iframeURL ) {
-			return;
-		}
-
-		// Only trigger once the plugin sidebar is actually in the DOM (i.e. opened).
-		const sidebarSelector = `.${ SIDEBAR_NAME }`;
-		let tries = 0;
-		const maxTries = 50; // ~5s at 100ms
-
-		const intervalId = window.setInterval( () => {
-			tries++;
-			const sidebarIsOpen = Boolean( document.querySelector( sidebarSelector ) );
-
-			if ( ! sidebarIsOpen ) {
-				if ( tries >= maxTries ) {
-					window.clearInterval( intervalId );
-				}
-				return;
-			}
-
-			window.clearInterval( intervalId );
-			setPreviewEntries( [] );
-			insertPreviewIframe( iframeURL, previewPlatform );
-		}, 100 );
-
-		return () => {
-			window.clearInterval( intervalId );
-		};
+		setPreviewEntries( [] );
+		insertPreviewIframe( iframeURL, previewPlatform );
 	}, [ iframeURL, insertPreviewIframe, previewPlatform ] );
 
+	// Listens for postMessage from the preview iframe containing Performance API resource data.
 	useEffect( () => {
 		const listener = ( event ) => {
 			let receivedEntries = event.data;
@@ -323,11 +312,12 @@ const HMMediaWeightSidebar = () => {
 		};
 	}, [ attachments ] );
 
+	// Calculate total media weight and determine status level.
 	let previewBytesTotal = previewEntries.reduce( ( total, entry ) => total + ( entry.previewSize || 0 ), 0 );
 
 	previewBytesTotal = ( previewBytesTotal / MB_IN_B ).toFixed( 2 );
 
-	// Determine status level for accessibility (not just color)
+	// Determine status level for accessibility (not just color).
 	let sizeStatus;
 	if ( previewBytesTotal >= 0 && previewBytesTotal <= ( mediaThreshold / 2 ) ) {
 		sizeStatus = 'good';
@@ -337,7 +327,7 @@ const HMMediaWeightSidebar = () => {
 		sizeStatus = 'error';
 	}
 
-	// Status configuration for colors, icons, and labels
+	// Status configuration mapping for visual indicators.
 	const statusConfig = {
 		good: {
 			color: '#00a32a',
@@ -525,12 +515,13 @@ const HMMediaWeightSidebar = () => {
 	);
 };
 
+// Registers the Media Weight plugin sidebar with WordPress.
 registerPlugin( PLUGIN_NAME, {
 	icon: ScalesIcon,
 	render: HMMediaWeightSidebar,
 } );
 
-// Block HMR boilerplate.
+// Hot Module Replacement support for development.
 if ( module.hot ) {
 	module.hot.accept();
 	module.hot.dispose( () => unregisterPlugin( PLUGIN_NAME ) );

@@ -65,65 +65,8 @@ const SkeletonBox = ( { width = '100%', height = '16px', style = {} } ) => (
 	/>
 );
 
-// Recursively extracts image and video blocks from the editor block tree.
-const getMediaBlocks = ( blocks ) => blocks.reduce(
-	( mediaBlocks, block ) => {
-		if ( [ 'core/image', 'core/video' ].includes( block.name ) ) {
-			mediaBlocks.push( block );
-		}
-		if ( block.innerBlocks ) {
-			return mediaBlocks.concat( getMediaBlocks( block.innerBlocks ) );
-		}
-		return mediaBlocks;
-	},
-	[]
-);
-
-// Custom hook that retrieves media block IDs and fetches their attachment records.
-const useMediaBlocks = () => {
-	const mediaBlocks = useSelect( ( select ) => getMediaBlocks( select( blockEditorStore ).getBlocks() ) );
-	const featuredImageId = useSelect( ( select ) => select( 'core/editor' ).getEditedPostAttribute( 'featured_media' ) );
-
-	/* eslint-disable no-shadow */
-	const { imageIds, videoIds } = useMemo( () => {
-		const imageIds = [];
-		const videoIds = [];
-		for ( const block of mediaBlocks ) {
-			if ( ! block.attributes?.id ) {
-				continue;
-			}
-			if ( block.name === 'core/image' ) {
-				imageIds.push( block.attributes.id );
-			} else if ( block.name === 'core/video' ) {
-				videoIds.push( block.attributes.id );
-			}
-		}
-		if ( featuredImageId !== 0 ) {
-			imageIds.push( featuredImageId );
-		}
-		return { imageIds, videoIds };
-	}, [ mediaBlocks, featuredImageId ] );
-	/* eslint-enable no-shadow */
-
-	const imageRecords = useEntityRecords( 'postType', 'attachment', {
-		per_page: imageIds.length,
-		include: imageIds,
-	} )?.records || [];
-	const videoRecords = useEntityRecords( 'postType', 'attachment', {
-		per_page: videoIds.length,
-		include: videoIds,
-	} )?.records || [];
-
-	return {
-		attachments: imageRecords.concat( videoRecords ),
-	};
-};
-
 // Main sidebar component that displays media weight calculations and status.
 const HMMediaWeightSidebar = () => {
-	const {
-		attachments,
-	} = useMediaBlocks();
 
 	// Performance API (“preview”) entries state.
 	const [ previewEntries, setPreviewEntries ] = useState( [] );
@@ -310,7 +253,7 @@ const HMMediaWeightSidebar = () => {
 		return () => {
 			window.removeEventListener( 'message', listener );
 		};
-	}, [ attachments ] );
+	}, [] );
 
 	// Calculate total media weight and determine status level.
 	let previewBytesTotal = previewEntries.reduce( ( total, entry ) => total + ( entry.previewSize || 0 ), 0 );

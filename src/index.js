@@ -151,7 +151,7 @@ const HMMediaWeightSidebar = () => {
 						animation: 'shimmer 1.5s infinite linear',
 					} }
 				>
-					<Flex gap={ 2 } align="center" justify="flex-start">
+					<Flex gap={ 2 } align="center" justify="center">
 						<SkeletonBox width="20px" height="20px" style={ { flexShrink: 0 } } />
 						<SkeletonBox width="65px" height="20px" style={ { flexShrink: 0 } } />
 						<SkeletonBox width="55px" height="18px" style={ { flexShrink: 0 } } />
@@ -161,11 +161,11 @@ const HMMediaWeightSidebar = () => {
 
 			{ /* Skeleton for media breakdown */ }
 			<Flex direction="column" gap={ 2 }>
-				<Flex gap={ 2 } align="center" justify="flex-start">
+				<Flex gap={ 2 } align="center" justify="center">
 					<SkeletonBox width="20px" height="20px" style={ { flexShrink: 0 } } />
 					<SkeletonBox width="150px" height="18px" style={ { flexShrink: 0 } } />
 				</Flex>
-				<Flex gap={ 2 } align="center" justify="flex-start">
+				<Flex gap={ 2 } align="center" justify="center">
 					<SkeletonBox width="20px" height="20px" style={ { flexShrink: 0 } } />
 					<SkeletonBox width="145px" height="18px" style={ { flexShrink: 0 } } />
 				</Flex>
@@ -436,7 +436,7 @@ const HMMediaWeightSidebar = () => {
 					{ /* Media Breakdown Section */ }
 					{ ! isFetchingPreview && previewEntries.length > 0 && (
 						<Flex direction="column" gap={ 2 }>
-							<Flex gap={ 2 } align="center" justify="flex-start">
+							<Flex gap={ 2 } align="center" justify="center">
 								<Icon icon={ image } size={ 18 } style={ { opacity: 0.7, flexShrink: 0 } } />
 								<span>
 									{ imagePreviewEntries.length
@@ -450,7 +450,7 @@ const HMMediaWeightSidebar = () => {
 									}
 								</span>
 							</Flex>
-							<Flex gap={ 2 } align="center" justify="flex-start">
+							<Flex gap={ 2 } align="center" justify="center">
 								<Icon icon={ video } size={ 18 } style={ { opacity: 0.7, flexShrink: 0 } } />
 								<span>
 									{ videoPreviewEntries.length
@@ -512,6 +512,7 @@ const HMMediaWeightSidebar = () => {
 					{ /* Refresh Button */ }
 					<Button
 						variant="secondary"
+						style={ { justifyContent: 'center' } }
 						onClick={ () => insertPreviewIframe( iframeURL, previewPlatform ) }
 						disabled={ isFetchingPreview }
 						aria-label={ __( 'Refresh preview data to recalculate media weight', 'hm-media-weight' ) }

@@ -23,7 +23,7 @@ import { addQueryArgs } from '@wordpress/url';
 import { ReactComponent as ScalesIcon } from './assets/scale-icon.svg';
 
 // Media size threshold (in MB) from server configuration.
-const { mediaThreshold } = window.mediaWeightData;
+const { mediaThreshold } = window.mediaWeightData || { mediaThreshold: 2.5 };
 
 // Plugin and sidebar identifiers.
 const PLUGIN_NAME = 'hm-media-weight';
@@ -179,6 +179,9 @@ const HMMediaWeightSidebar = () => {
 
 	// Refresh the preview iframe when URL or platform changes.
 	useEffect( () => {
+		if ( ! iframeURL ) {
+			return;
+		}
 		setPreviewEntries( [] );
 		insertPreviewIframe( iframeURL, previewPlatform );
 	}, [ iframeURL, insertPreviewIframe, previewPlatform ] );
@@ -186,6 +189,11 @@ const HMMediaWeightSidebar = () => {
 	// Listens for postMessage from the preview iframe containing Performance API resource data.
 	useEffect( () => {
 		const listener = ( event ) => {
+			// Only accept messages from same origin.
+			if ( event.origin !== window.location.origin ) {
+				return;
+			}
+
 			let receivedEntries = event.data;
 
 			try {

@@ -1,7 +1,7 @@
 /**
  * WordPress editor plugin for calculating and displaying page media weight.
  */
-import { useMemo, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { PluginSidebar } from '@wordpress/editor';
 import {
@@ -15,8 +15,6 @@ import {
 import { registerPlugin, unregisterPlugin } from '@wordpress/plugins';
 import { useSelect } from '@wordpress/data';
 import { useEffect } from '@wordpress/element';
-import { store as blockEditorStore } from '@wordpress/block-editor';
-import { useEntityRecords } from '@wordpress/core-data';
 import { check, warning, closeSmall, image, video } from '@wordpress/icons';
 import { addQueryArgs } from '@wordpress/url';
 

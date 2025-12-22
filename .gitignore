@@ -31,3 +31,6 @@ node_modules/
 
 # Built files
 build/
+
+# vendor files
+vendor/
